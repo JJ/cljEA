@@ -1,0 +1,57 @@
+
+(ns evaluator)
+
+(defn create [
+               pidPoolManager ; agent
+               pidProfiler ; agent
+               ]
+  ;(defrecord TEvaluator [manager profiler pid])
+  (pea.TEvaluator. pidPoolManager pidProfiler (atom 0))
+  )
+
+(ns poolManager)
+
+(defn create [pprofiler pmanager]
+  ;  (defrecord TPoolManager
+  ;    [table solutionReached migrantsDestination
+  ;     profiler manager pmConf
+  ;     evals reps poolSize pid])
+;  (println "Creando poolmanagers")
+  (pea.TPoolManager. (ref {}) (atom 0) (atom 0) pprofiler pmanager (atom 0) (atom 0) (atom 0) (atom 0) (atom 0))
+  )
+
+(ns reproducer)
+
+(defn create [pidPoolManager pidProfiler]
+  ;(defrecord TReproducer [manager profiler pid hs])
+;  (println "creando repro con pmanager:" (class pidPoolManager))
+  (pea.TReproducer. pidPoolManager pidProfiler (atom 0) (agent []))
+  )
+
+(ns profiler)
+
+(defn create []
+  ;  (defrecord TProfiler
+  ;    [conf report initEvol nIslands iterations emigrations pid])
+  (pea.TProfiler. (atom 0) (atom 0) (atom 0) (atom 0) (atom 0) (atom 0) (atom 0))
+  )
+
+(ns report)
+
+(defn create [eProfiler]
+  ;  (defrecord TReport
+  ;    [results numberOfExperiments profiler instances pid])
+  (pea.TReport. (atom []) (atom 0) eProfiler (atom []) (atom 0))
+  )
+
+(ns manager)
+
+(defn create [pprofiler preport]
+  ;  (defrecord TManager
+  ;    [pools ; set
+  ;     profiler report
+  ;     endEvol numberOfEvals pid])
+  (pea.TManager.
+    (atom #{}) pprofiler preport
+    (atom 0) (atom 0) (atom 0))
+  )
