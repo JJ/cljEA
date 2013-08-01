@@ -15,16 +15,9 @@
 (require '[clojure.set])
 
 (defn extractSubpopulation
-  "
-  returns: (seq [ind fitness])
-  "
+  "returns: (seq [ind fitness])"
   [table n self]
   ;  (println "Uno:" (get table (nth (keys table) 0)))
-  ;  (def ^:private extractSubpopulationSels (for [[ind [fitness state]] table
-  ;                            :when (= state 2)]
-  ;                        [ind fitness]
-  ;                        )
-
   (let [
          sels (for [[ind [fitness state]] table
                     :when (= state 2)]
@@ -35,7 +28,6 @@
          ]
     (take n res)
     )
-
   ;  (send (.hs self) #(conj %1 %2) {:table table :extractSubpopulationSels extractSubpopulationSels})
   ;  (send (.hs self)  #(identity %2) {:table table :extractSubpopulationSels extractSubpopulationSels})
 
@@ -43,9 +35,7 @@
   ;  (def ^:private sels (pea/selectPairs table 2))
   ;  (pea/checkListIntPairs extractSubpopulationSels)
   ;  (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":" extractSubpopulationSels)))
-
   )
-
 (defn bestParent [pop2r]
   ;  (def ^:private population (sort #(> (%1 1) (%2 1)) pop2r)) ; (OJO: Refactorizar)
   ;  (first population)
@@ -144,20 +134,30 @@
   reproducer/Reproducer
 
   (evolve [self n]
-;        (println "evolve")
+;            (println "evolve")
+
+    (send pea/contador inc)
+
+    (when (= @pea/contador 200)
+      (send pea/contador #(identity %2) 0)
+      (let [
+             st (pea/get-status @(.table @(.manager self)))
+             ]
+        (println "Data:" (str st))
+        )
+      )
+
     (let [
            subpop (extractSubpopulation @(.table @(.manager self)) n self)
            ]
 
       (if (< (count subpop) 3)
         (do
-                  (println "No hay casos en estado 2")
           ;        (println "*********************************************************")
-          (send (.manager self) poolManager/repEmpthyPool @(.pid self))
+          (send (.manager self) poolManager/repEmpthyPool *agent*)
           )
-
         (do
-
+          ;          (println "Reproducing" (count subpop))
           (let [
                  parentsCount (quot n 2)
                  pop2r (selectPop2Reproduce subpop parentsCount)
@@ -175,23 +175,10 @@
                  ]
 
             (send (.manager self) poolManager/updatePool res2Send)
-            (send (.manager self) poolManager/evolveDone @(.pid self))
+            (send (.manager self) poolManager/evolveDone *agent*)
             (send (.profiler self) profiler/iteration nInds)
 
-            (send pea/contador inc)
 
-            (if (= @pea/contador 500)
-              (do
-                (send pea/contador #(identity %2) 0)
-                (let [
-                       st (pea/get-status @(.table @(.manager self)))
-                       ]
-
-                  (println "Data: " (str st))
-
-                  )
-                )
-              )
 
             ;        (if yes1
             ;          (do
@@ -227,7 +214,7 @@
       ;    (send (.hs self) #(conj %1 %2) {:table @(.table @(.manager self)) :sels sels})
       ;    (send (.hs self) #(identity %2) {:table @(.table @(.manager self)) :sels sels})
 
-      (if (> (count sels) 0)
+      (when (> (count sels) 0)
         (let [
                p (reduce pea/cmp1 sels)
                ]
@@ -246,11 +233,4 @@
   (finalize [self]
     self
     )
-
-  HasPid
-  (setPid [self pid]
-    (swap! (.pid self) #(identity %2) pid)
-    self
-    )
-
   )

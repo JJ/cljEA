@@ -21,9 +21,9 @@
     (send (.profiler self) profiler/initEvol (.getTime (Date.)))
 
     (doseq [p ppools]
-        ;        (send p poolManager/setPoolsManager @(.pid self))
-        (send p poolManager/sReps)
-        (send p poolManager/sEvals)
+      ;        (send p poolManager/setPoolsManager *agent*)
+      (send p poolManager/sReps)
+      (send p poolManager/sEvals)
       )
     (swap! (.endEvol self) #(identity %2) false)
     (swap! (.numberOfEvals self) #(identity %2) 0)
@@ -32,25 +32,25 @@
     )
 
   (evalDone [self _]
-;    (println "entrando a evolveDone " @(.numberOfEvals self))
+    ;    (println "entrando a evolveDone " @(.numberOfEvals self))
     (swap! (.numberOfEvals self) inc)
     self
     )
 
   (poolManagerEnd [self pid]
-;    (println "manager/poolManagerEnd" pid)
+    ;    (println "manager/poolManagerEnd" pid)
     (send pid poolManager/finalize)
     (if (empty? (swap! (.pools self) #(disj % pid)))
       (do
-;        (println "manager/finalize")
-        (send (.pid self) manager/finalize)
+        ;        (println "manager/finalize")
+        (manager/finalize self)
         )
       )
     self
     )
 
   (endEvol [self t]
-    (println "Acabada una evolucion!")
+    ;    (println "Acabada una evolucion!")
     (if (not @(.endEvol self))
       (do
         (send (.profiler self) profiler/endEvol t @(.numberOfEvals self))
@@ -61,25 +61,19 @@
     )
 
   (solutionReachedByPoolManager [self _]
-;    (println "solutionReachedByPoolManager")
+    ;    (println "solutionReachedByPoolManager")
     (doseq [p @(.pools self)]
       (send p poolManager/solutionReachedbyAny)
-;      (println "manager/finalize")
+      ;      (println "manager/finalize")
       (manager/finalize self)
       )
     self
     )
 
   (finalize [self]
-;    (println "report/mkExperiment")
+    ;    (println "report/mkExperiment")
     (send (.report self) report/mkExperiment)
     self
     )
 
-  HasPid
-  (setPid [self pid]
-;    (println "manager/setPid")
-    (swap! (.pid self) #(identity %2) pid)
-    self
-    )
   )

@@ -38,22 +38,19 @@
 
          ]
 
-    (pea/setPid @eProfiler eProfiler)
-    (pea/setPid @eReport eReport)
-
     (send eProfiler profiler/init eReport)
 
     (send eReport report/session
-          (vec (for [_ (range 3)] #(r2 eProfiler eReport)))
+;      (vec (for [_ (range 1)] #(r2 eProfiler eReport)))
 
-;      [
-;        #(r2 eProfiler eReport)
-        ;                                 #(r2 eProfiler eReport)
-        ;                                 #(r1 eProfiler eReport)
-        ;                                 #(r2 eProfiler eReport)
-        ;                                 #(r1 eProfiler eReport)
-        ;                                 #(r2 eProfiler eReport)
-;        ]
+            [
+              #(r1 eProfiler eReport)
+      ;                                 #(r2 eProfiler eReport)
+      ;                                 #(r1 eProfiler eReport)
+      ;                                 #(r2 eProfiler eReport)
+      ;                                 #(r1 eProfiler eReport)
+      ;                                 #(r2 eProfiler eReport)
+              ]
 
       )
     )

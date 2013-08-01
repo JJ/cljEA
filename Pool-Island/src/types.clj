@@ -1,27 +1,24 @@
 (ns pea)
 
-(defrecord TEvaluator [manager
-                       profiler
-                       pid])
-
+(defrecord TEvaluator [manager profiler])
 
 (defrecord TManager
   [pools ; set
    profiler report
-   endEvol numberOfEvals pid])
+   endEvol numberOfEvals])
 
 (defrecord TPoolManager
   [table solutionReached migrantsDestination
    profiler manager pmConf
-   evals reps poolSize pid])
+   evals reps poolSize])
 
 (defrecord TProfiler
-  [conf report initEvol nIslands iterations emigrations pid])
+  [conf report initEvol nIslands iterations emigrations])
 
 (defrecord TReport
-  [results numberOfExperiments profiler instances pid])
+  [results numberOfExperiments profiler instances])
 
-(defrecord TReproducer [manager profiler pid hs])
+(defrecord TReproducer [manager profiler])
 
 (defn checkListPairs [pairs]
   (if (not (every? #(= (count %) 2) pairs))
@@ -32,8 +29,8 @@
 (defn checkListIntPairs [pairs]
   (if (not (every? #(and
                       (= (count %) 2)
-;                      (instance? java.lang.Number (% 0))
-;                      (instance? java.lang.Number (% 1))
+                      ;                      (instance? java.lang.Number (% 0))
+                      ;                      (instance? java.lang.Number (% 1))
                       ) pairs))
     (throw (RuntimeException.
              (clojure.string/join ["not all are int pairs: " (clojure.string/join ":" pairs)])))
@@ -133,7 +130,7 @@
     )
   )
 
-(defn cmp2[e1 e2]
+(defn cmp2 [e1 e2]
   ;    (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":::" [e1 e2])))
   (> (e1 1) (e2 1))
   )

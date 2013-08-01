@@ -13,8 +13,8 @@
 
 (use '[clojure.java.io :only (writer file)])
 
-(defprotocol HasPid
-  (setPid [self pid])
+(defprotocol Finalize
+  (finalize [self])
   )
 
 (ns evaluator)

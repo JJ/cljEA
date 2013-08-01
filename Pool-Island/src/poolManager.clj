@@ -51,37 +51,36 @@
 
          alreadyEvaluatedkeys (clojure.set/difference tableKeysSet newInds)
 
-         result (if (>= (count alreadyEvaluatedkeys) cant2Drop)
-                  (let [
-                         alreadyEvaluated (for [k alreadyEvaluatedkeys] [k (nth (tr k) 0)])
-                         alreadyEvaluated2Trim (take cant2Drop (sort #(< (%1 1) (%2 1)) alreadyEvaluated))
-                         ]
-                    (apply dissoc tr (for [[i _] alreadyEvaluated2Trim] i))
-                    )
-                  (let [
-                         n1 (count alreadyEvaluatedkeys)
-                         tr1 (apply dissoc tr (for [k alreadyEvaluatedkeys] k))
-                         noEvalTableKeysSet (set (for [[ind [fitness state]] tr1
-                                                       :when (= state 1)]
-                                                   ind)
-                                              )
-                         noEvaluatedkeys (clojure.set/difference noEvalTableKeysSet newInds)
-                         noEvaluated2Trim (take (- cant2Drop 1) noEvaluatedkeys)
-                         tr2 (apply dissoc tr1 (for [k noEvaluated2Trim] k))
-                         n2 (- (count tr2) poolSize)
-                         ]
-                    (if (> n2 0)
-                      (apply dissoc tr2 (take n2 (keys tr2)))
-                      tr2
-                      )
-                    )
-                  )
          ]
 
-    result
+    (if (>= (count alreadyEvaluatedkeys) cant2Drop)
+      (let [
+             alreadyEvaluated (for [k alreadyEvaluatedkeys] [k (nth (tr k) 0)])
+             alreadyEvaluated2Trim (take cant2Drop (sort #(< (%1 1) (%2 1)) alreadyEvaluated))
+             ]
+        (apply dissoc tr (for [[i _] alreadyEvaluated2Trim] i))
+        )
+      (let [
+             n1 (count alreadyEvaluatedkeys)
+             tr1 (apply dissoc tr (for [k alreadyEvaluatedkeys] k))
+             noEvalTableKeysSet (set (for [[ind [fitness state]] tr1
+                                           :when (= state 1)]
+                                       ind)
+                                  )
+             noEvaluatedkeys (clojure.set/difference noEvalTableKeysSet newInds)
+             noEvaluated2Trim (take (- cant2Drop 1) noEvaluatedkeys)
+             tr2 (apply dissoc tr1 (for [k noEvaluated2Trim] k))
+             n2 (- (count tr2) poolSize)
+             ]
+        (if (> n2 0)
+          (apply dissoc tr2 (take n2 (keys tr2)))
+          tr2
+          )
+        )
+      )
+
+    ;    (merge-with pea/merge-tables-function table newEntries)
     )
-
-
 
   ;    (into table newEntries)
   ;  (def rres (merge-with pea/merge-tables-function table newEntries))
@@ -93,10 +92,8 @@
 
 (extend-type TPoolManager
   poolManager/PoolManager
-
   ;agent que comparte un conjunto de individuos con
   ;agentes evaluadores y reproductores
-
   (init [self conf]
     (swap! (.pmConf self) #(identity %2)
       {
@@ -108,25 +105,19 @@
 
     (swap! (.evals self) #(identity %2)
       (set (for [_ (range (:evaluatorsCount conf))]
-             (agent (evaluator/create @(.pid self) (.profiler self))
+             (agent (evaluator/create *agent* (.profiler self))
                ;               :error-mode :continue
                :error-handler pea/evaluator-error)
              ))
       )
 
-    (doseq [e @(.evals self)]
-      (setPid @e e))
-
     (swap! (.reps self) #(identity %2)
       (set (for [_ (range (:reproducersCount conf))]
-             (agent (reproducer/create @(.pid self) (.profiler self))
+             (agent (reproducer/create *agent* (.profiler self))
                ;               :error-mode :continue
                :error-handler pea/reproducer-error)
              ))
       )
-
-    (doseq [e @(.reps self)]
-      (setPid @e e))
 
     (swap! (.solutionReached self) #(identity %2) false)
 
@@ -141,10 +132,7 @@
           (zipmap population (for [_ population] [-1 1]))
           )
         )
-
       )
-
-
     self
     )
 
@@ -214,10 +202,10 @@
     (let [
            nEvals (swap! (.evals self) #(disj %1 %2) pid)
            ]
-      (if (and
-            (empty? @(.reps self))
-            (empty? nEvals)
-            )
+      (when (and
+              (empty? @(.reps self))
+              (empty? nEvals)
+              )
         (send pid evaluator/finalize)
         )
       )
@@ -229,10 +217,10 @@
     (let [
            nReps (swap! (.reps self) #(disj %1 %2) pid)
            ]
-      (if (and
-            (empty? nReps)
-            (empty? @(.evals self))
-            )
+      (when (and
+              (empty? nReps)
+              (empty? @(.evals self))
+              )
         (send pid reproducer/finalize)
         )
       )
@@ -245,7 +233,7 @@
     (if @(.solutionReached self)
       (send pid reproducer/finalize)
       (do
-        (if (= (rem (rand-int 100) 2) 0)
+        (when (= (rem (rand-int 100) 2) 0)
           (send pid reproducer/emigrateBest (rand-nth @(.migrantsDestination self)))
           )
         (send pid reproducer/evolve (:reproducersCapacity @(.pmConf self)))
@@ -259,7 +247,7 @@
     (if @(.solutionReached self)
       (send pid evaluator/finalize)
       (do
-        (send (.manager self) manager/evalDone @(.pid self))
+        (send (.manager self) manager/evalDone *agent*)
         (send pid evaluator/evaluate (:evaluatorsCapacity @(.pmConf self)))
         )
       )
@@ -281,26 +269,23 @@
     )
 
   (solutionReachedbyAny [self]
-    (if (not @(.solutionReached self))
-      (do
-        (doseq [e @(.reps self)]
-          (send e reproducer/finalize))
-        (doseq [e @(.evals self)]
-          (send e evaluator/finalize))
-        (swap! (.solutionReached self) #(identity %2) true)
-        )
+    (when-not @(.solutionReached self)
+      (doseq [e @(.reps self)]
+        (send e reproducer/finalize))
+      (doseq [e @(.evals self)]
+        (send e evaluator/finalize))
+      (swap! (.solutionReached self) #(identity %2) true)
+
       )
     self
     )
 
   (solutionReachedbyEvaluator [self pid]
     ;    (println "solutionReachedbyEvaluator")
-    (if (not @(.solutionReached self))
-      (do
-        (send (.manager self) manager/endEvol (.getTime (Date.)))
-        (send (.manager self) manager/solutionReachedByPoolManager @(.pid self))
-        (swap! (.solutionReached self) #(identity %2) true)
-        )
+    (when-not @(.solutionReached self)
+      (send (.manager self) manager/endEvol (.getTime (Date.)))
+      (send (.manager self) manager/solutionReachedByPoolManager *agent*)
+      (swap! (.solutionReached self) #(identity %2) true)
       )
     self
     )
@@ -309,17 +294,15 @@
     ;    (println "esperando 50 msegs en evalEmpthyPool")
     (let [
            f (fn []
-               (do
-                                          (println "eval")
-                 (send pid evaluator/evaluate (:evaluatorsCapacity @(.pmConf self)))
-                 )
+
+               ;               (println "eval")
+               (send pid evaluator/evaluate (:evaluatorsCapacity @(.pmConf self)))
+
                )
            ]
 
       (ShedulingUtility/send_after 100 f)
       )
-
-
     self
     )
 
@@ -327,29 +310,21 @@
 
     (let [
            f (fn []
-               (do
-                 (println "repr")
-                 (send pid reproducer/evolve (:reproducersCapacity @(.pmConf self)))
-                 )
+
+               ;               (println "repr")
+               (send pid reproducer/evolve (:reproducersCapacity @(.pmConf self)))
+
                )
            ]
 
       (ShedulingUtility/send_after 50 f)
       )
-
-
     self
     )
-
 
   (finalize [self]
-    (send (.manager self) manager/poolManagerEnd @(.pid self))
+    (send (.manager self) manager/poolManagerEnd *agent*)
     self
     )
 
-  HasPid
-  (setPid [self pid]
-    (swap! (.pid self) #(identity %2) pid)
-    self
-    )
   )

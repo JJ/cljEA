@@ -70,10 +70,4 @@
   (finalize [self]
     self
     )
-
-  HasPid
-  (setPid [self pid]
-    (swap! (.pid self) #(identity %2) pid)
-    self
-    )
   )

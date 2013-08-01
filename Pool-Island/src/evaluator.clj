@@ -15,6 +15,7 @@
   evaluator/Evaluator
 
   (evaluate [self n]
+    ;    (println "evaluate")
     (let [
            sels (take n
                   (for [[ind [_ state]] @(.table @(.manager self))
@@ -26,7 +27,7 @@
                (do
                  ;        (println "No hay casos en estado 1")
                  ;        (println "---------------------------------------------")
-                 (send (.manager self) poolManager/evalEmpthyPool @(.pid self))
+                 (send (.manager self) poolManager/evalEmpthyPool *agent*)
                  )
 
                (do
@@ -40,7 +41,7 @@
 
                                          (if (= fit l)
                                            (do
-                                             (send (.manager self) poolManager/solutionReachedbyEvaluator @(.pid self))
+                                             (send (.manager self) poolManager/solutionReachedbyEvaluator *agent*)
                                              )
                                            )
 
@@ -55,7 +56,7 @@
                    ;        (println NSels)
                    ;        (assoc self :table (into (:table self) NSels))
                    (send (.manager self) poolManager/add2Pool-Ind-Fit-State nSels)
-                   (send (.manager self) poolManager/evalDone @(.pid self))
+                   (send (.manager self) poolManager/evalDone *agent*)
                    )
                  )
                )
@@ -67,13 +68,7 @@
     )
 
   (finalize [self]
-    (send (.manager self) poolManager/evaluatorFinalized @(.pid self))
-    self
-    )
-
-  HasPid
-  (setPid [self pid]
-    (swap! (.pid self) #(identity %2) pid)
+    (send (.manager self) poolManager/evaluatorFinalized *agent*)
     self
     )
   )

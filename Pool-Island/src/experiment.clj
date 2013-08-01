@@ -45,8 +45,7 @@
          ]
 
     (send pprofiler profiler/configuration conf 1)
-    (pea/setPid @lmanager lmanager)
-    (pea/setPid @p1 p1)
+
     (send p1 poolManager/init (assoc conf :population (genInitPop popSize chromosomeSize)))
     (send p1 poolManager/migrantsDestination [p1])
     (send lmanager manager/init #{p1})
@@ -64,9 +63,9 @@
 
          conf {
                 :evaluatorsCount 5
-                :evaluatorsCapacity 5
-                :reproducersCount 50
-                :reproducersCapacity 5
+                :evaluatorsCapacity 20
+                :reproducersCount 5
+                :reproducersCapacity 20
                 ;              :report preport
                 ;              :profiler pprofiler
                 }
@@ -86,11 +85,6 @@
          ]
 
     (send pprofiler profiler/configuration conf 2)
-
-    (pea/setPid @lmanager lmanager)
-
-    (pea/setPid @p1 p1)
-    (pea/setPid @p2 p2)
 
     (send p1 poolManager/init (assoc conf :population (genInitPop popSize chromosomeSize)))
     (send p1 poolManager/migrantsDestination [p2])
