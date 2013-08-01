@@ -57,12 +57,11 @@
 
 
 (def error (atom true))
-;
+
 (def jaGlobal (atom #(println "testing")))
 
 (defn print-error [the-agent exception]
-  (if @error
-    (do
+  (when @error
       ;      (println (class @the-agent) "::" @(.hs @the-agent))
       (.println System/out (.getMessage exception))
       (swap! error #(identity %2) false)
@@ -80,7 +79,6 @@
 
         )
 
-      )
     )
 
   )
@@ -116,7 +114,7 @@
 (def contador (agent 0 :error-handler pea/contador-error))
 
 (defn merge-tables-function [v1 v2]
-  (if (or
+  (when (or
         (not= (count v1) 2)
         (not= (count v2) 2)
         (not (instance? java.lang.Number (v1 1)))
@@ -151,6 +149,6 @@
   ;                         ["errors in: " (clojure.string/join ":" Sels)])))
   ;              )
   ;            )
-  (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":::" [e1 e2])))
+;  (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":::" [e1 e2])))
   (if (< (e1 1) (e2 1)) e2 e1)
   )
