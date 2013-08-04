@@ -9,6 +9,12 @@
 ;; AGPL (http://www.gnu.org/licenses/agpl-3.0.txt) for more details.
 ;;
 
+(ns evaluator)
+
+(defn maxOnes [L]
+  (count (for [l L :when (= l \1)] l))
+  )
+
 (ns pea)
 
 (extend-type TEvaluator

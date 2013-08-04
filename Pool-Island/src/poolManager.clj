@@ -136,8 +136,6 @@
     self
     )
 
-
-
   (updatePool [self newPool]
     ;    (println "updatePool")
 

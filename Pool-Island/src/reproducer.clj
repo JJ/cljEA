@@ -16,14 +16,8 @@
 
 (defn extractSubpopulation
   "returns: (seq [ind fitness])"
-  [table n self]
-  ;  (println "Uno:" (get table (nth (keys table) 0)))
+  [sels n]
   (let [
-         sels (for [[ind [fitness state]] table
-                    :when (= state 2)]
-                [ind fitness]
-                )
-
          res (sort pea/cmp2 sels)
          ]
     (take n res)
@@ -130,77 +124,74 @@
   (concat (for [[a _] parents2flatt] a) (for [[_ b] parents2flatt] b))
   )
 
+(defn evolve [& {:keys [subpop parentsCount doWhenLittle] :or {doWhenLittle #()}}]
+
+  (if (< (count subpop) 3)
+    (do
+      ;        (println "*********************************************************")
+      (doWhenLittle)
+      [nil nil]
+      )
+    (do
+      ;          (println "Reproducing" (count subpop))
+      (let [
+
+             pop2r (selectPop2Reproduce subpop parentsCount)
+             parents2use (parentsSelector pop2r parentsCount)
+             nIndsByPair (map crossover parents2use)
+             nInds (concat (for [[I _] nIndsByPair] I) (for [[_ I] nIndsByPair] I))
+             noParents (clojure.set/difference (set subpop) (set (flatt parents2use)))
+             bestParents [(bestParent pop2r)]
+             ]
+        [:ok [
+                noParents
+                nInds
+                bestParents
+                ]
+         ]
+        )
+      )
+    )
+  )
+
 (extend-type TReproducer
   reproducer/Reproducer
 
   (evolve [self n]
     ;            (println "evolve")
-
-    (send pea/contador inc)
-
-    (when (= @pea/contador 200)
-      (send pea/contador #(identity %2) 0)
-      (let [
-             st (pea/get-status @(.table @(.manager self)))
-             ]
-        (println "Data:" (str st))
-        )
-      )
-
     (let [
-           subpop (extractSubpopulation @(.table @(.manager self)) n self)
+           subpop (extractSubpopulation
+                    (for [[ind [fitness state]] @(.table @(.manager self))
+                          :when (= state 2)]
+                      [ind fitness]
+                      )
+                    n
+                    )
+           [res [noParents nInds bestParents]]
+           (evolve
+             :subpop subpop
+             :parentsCount (quot n 2)
+             :doWhenLittle (fn []
+                             (send (.manager self) poolManager/repEmpthyPool *agent*)
+                             )
+             )
            ]
 
-      (if (< (count subpop) 3)
-        (do
-          ;        (println "*********************************************************")
-          (send (.manager self) poolManager/repEmpthyPool *agent*)
-          )
-        (do
-          ;          (println "Reproducing" (count subpop))
-          (let [
-                 parentsCount (quot n 2)
-                 pop2r (selectPop2Reproduce subpop parentsCount)
-                 parents2use (parentsSelector pop2r parentsCount)
-                 nIndsByPair (map crossover parents2use)
-                 nInds (concat (for [[I _] nIndsByPair] I) (for [[_ I] nIndsByPair] I))
-                 noParents (clojure.set/difference (set subpop) (set (flatt parents2use)))
-                 bestParents [(bestParent pop2r)]
-                 res2Send (updatePoolFunc
-                            @(.table @(.manager self))
-                            subpop noParents
-                            nInds bestParents
-                            )
-
-                 ]
-
-            (send (.manager self) poolManager/updatePool res2Send)
-            (send (.manager self) poolManager/evolveDone *agent*)
-            (send (.profiler self) profiler/iteration nInds)
-
-
-
-            ;        (if yes1
-            ;          (do
-            ;            (send pea/contador #(identity %2) 0)
-            ;
-            ;            (def st (get-status res2Send))
-            ;
-            ;            ;      (println "eval:" (st 0) "noEval:" (st 1))
-            ;            (println "BSol 2 :" (st 2) "WSol 2:" (st 3))
-            ;            )
-            ;          )
-
+      (when res
+        (send (.manager self)
+          poolManager/updatePool
+          (updatePoolFunc
+            @(.table @(.manager self))
+            subpop noParents
+            nInds bestParents
             )
-
-          ;        (send (.hs self) #(conj %1 %2) {:subpop subpop :noParents noParents
-          ;                                        :nInds nInds :bestParents bestParents})
-
           )
+        (send (.manager self) poolManager/evolveDone *agent*)
+        (send (.profiler self) profiler/iteration nInds)
         )
+
+      self
       )
-    ;    (println "rep ENDED")
-    self
     )
 
   (emigrateBest [self destination]

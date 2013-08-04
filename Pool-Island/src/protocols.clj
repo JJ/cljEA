@@ -19,10 +19,6 @@
 
 (ns evaluator)
 
-(defn maxOnes [L]
-  (count (for [l L :when (= l \1)] l))
-  )
-
 (defprotocol Evaluator
   (evaluate [self N])
   (finalize [self])

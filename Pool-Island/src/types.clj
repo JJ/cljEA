@@ -62,22 +62,22 @@
 
 (defn print-error [the-agent exception]
   (when @error
-      ;      (println (class @the-agent) "::" @(.hs @the-agent))
-      (.println System/out (.getMessage exception))
-      (swap! error #(identity %2) false)
-      (@jaGlobal)
-      (clojure.repl/pst exception)
+    ;      (println (class @the-agent) "::" @(.hs @the-agent))
+    (.println System/out (.getMessage exception))
+    (swap! error #(identity %2) false)
+    (@jaGlobal)
+    (clojure.repl/pst exception)
 
-      (with-open [w (writer (file "log.txt"))]
-        ;        (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount\n")
-        ;        (def allH @(.hs @the-agent))
-        ;        (doseq [ hEntry (subvec allH (- (count allH) 1))]
-        ;          (.write w (str hEntry))
-        ;          )
+    (with-open [w (writer (file "log.txt"))]
+      ;        (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount\n")
+      ;        (def allH @(.hs @the-agent))
+      ;        (doseq [ hEntry (subvec allH (- (count allH) 1))]
+      ;          (.write w (str hEntry))
+      ;          )
 
-        (.write w (str @(.hs @the-agent)))
+      (.write w (str @(.hs @the-agent)))
 
-        )
+      )
 
     )
 
@@ -115,11 +115,11 @@
 
 (defn merge-tables-function [v1 v2]
   (when (or
-        (not= (count v1) 2)
-        (not= (count v2) 2)
-        (not (instance? java.lang.Number (v1 1)))
-        (not (instance? java.lang.Number (v2 1)))
-        )
+          (not= (count v1) 2)
+          (not= (count v2) 2)
+          (not (instance? java.lang.Number (v1 1)))
+          (not (instance? java.lang.Number (v2 1)))
+          )
     (throw (IllegalStateException. "Values not correct." (clojure.string/join "--" [v1 v2])))
     )
   (if (= (v1 1) 1) ; Si el que lo recibe está en estado 1: ok
@@ -149,6 +149,6 @@
   ;                         ["errors in: " (clojure.string/join ":" Sels)])))
   ;              )
   ;            )
-;  (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":::" [e1 e2])))
+  ;  (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":::" [e1 e2])))
   (if (< (e1 1) (e2 1)) e2 e1)
   )
