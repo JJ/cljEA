@@ -58,9 +58,7 @@
 (def bestSolution (atom -1))
 
 (runSeqEA
-
   :genInitPop experiment/genInitPop
-
   :evaluatePopulation (fn [[alreadyEval nInds]]
 
                         (let [
@@ -79,13 +77,9 @@
                           )
 
                         )
-
   :findBestSolution (fn [_] @bestSolution)
-
   :terminationCondition #(not= @bestSolution -1)
-
   :selectParents #(pea/extractSubpopulation % 30)
-
   :applyVariationOperators (fn [subpop]
                              (let [
                                     [res evolResult]
@@ -100,7 +94,6 @@
                                  )
                                )
                              )
-
   :selectNewPopulation (fn [iPopEvaluated [noParents nInds bestParents]]
                          (let [
                                 cantNews (reduce + (map count [noParents nInds bestParents]))
