@@ -13,6 +13,8 @@
 
 (use '[clojure.java.io :only (writer file)])
 
+(ns finalize)
+
 (defprotocol Finalize
   (finalize [self])
   )
@@ -30,8 +32,8 @@
   (init [self ppools])
   (evalDone [self pid])
   (poolManagerEnd [self pid])
-  (endEvol [self t])
-  (solutionReachedByPoolManager [self pid])
+  ;  (endEvol [self t])
+  (solutionReached [self pid])
   (finalize [self])
   )
 
@@ -50,8 +52,8 @@
   (evalDone [self pid])
   (sReps [self])
   (sEvals [self])
-  (solutionReachedbyAny [self])
-  (solutionReachedbyEvaluator [self pid])
+  (solutionReachedbyPool [self])
+  (solutionReachedbyEvaluator [self solution pid])
   (evalEmpthyPool [self pid])
   (repEmpthyPool [self pid])
   (finalize [self])

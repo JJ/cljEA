@@ -67,6 +67,7 @@
     self
     )
 
+  finalize/Finalize
   (finalize [self]
     self
     )

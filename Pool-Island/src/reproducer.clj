@@ -37,20 +37,38 @@
   )
 
 (defn updatePoolFunc [table subpop noParents
-                      nInds bestParents]
+                      nInds bestParents poolSize]
 
   (let [
-         p (concat noParents bestParents)
-         l1 (map #(conj % 2) p)
-         l2 (map #(identity [% -1 1]) nInds)
+         p (concat noParents bestParents subpop)
+         l1 (for [[i j] p] [i [j 2]])
+         l2 (for [i nInds] [i [-1 1]])
          l3 (concat l1 l2)
-         res (zipmap (for [[I _ _] l3] I) (for [[_ F S] l3] [F S]))
-         table1 (apply dissoc table (for [[I _] subpop] I)) ; Remove the subpopulation already selected
+         sub1 (into {} l3)
+         table1 (apply dissoc table (keys sub1)) ; Remove the subpopulation already selected
+         cant2Drop (- (count table1) (- poolSize (count sub1)))
+         restOlds (apply dissoc table1 (take cant2Drop
+                                         (for [[ind [_ state]] table1
+                                               :when (= state 2)]
+                                           ind
+                                           )
+                                         ))
+         more2Drop (- (+ (count sub1) (count restOlds)) poolSize)
+         result (if (> more2Drop 0)
+                  (apply dissoc restOlds (take more2Drop
+                                           (for [[ind [_ state]] restOlds
+                                                 :when (= state 1)]
+                                             ind
+                                             )
+                                           ))
+                  restOlds
+                  )
          ;         result (into table1 res)
-         result (merge-with pea/merge-tables-function table1 res)
+         ;         result (merge-with pea/merge-tables-function table1 res)
          ]
-
-    result
+    ;    (println (count result))
+    (into result sub1)
+    ;    (into restOlds sub1)
     )
 
   )
@@ -95,7 +113,7 @@
   input: ((String, Int), (String, Int))
   returns: (String, String)
   "
-  [[[ind1 _] [ind2 _]]]
+  [[[ind1 f1] [ind2 f2]]]
 
   (let [
          changeB (fn [b]
@@ -114,8 +132,23 @@
          bit1 (changeB (first m2))
          result1 (concat m1 (conj m3 bit1))
          result2 (concat (nth cross2 0) (nth cross1 1))
+         res1 (clojure.string/join result1)
+         res2 (clojure.string/join result2)
          ]
-    [(clojure.string/join result1) (clojure.string/join result2)]
+
+    ;    (when (or
+    ;          (> f1 125)
+    ;          (> f2 125)
+    ;          )
+    ;      (when (= 128 (evaluator/maxOnes res1))
+    ;        (println res1)
+    ;        )
+    ;      (when (= 128 (evaluator/maxOnes res2))
+    ;        (println res2)
+    ;        )
+    ;      )
+    ;
+    [res1 res2]
     )
   ;  (println "saliendo de crossover" ind1)
   )
@@ -144,10 +177,10 @@
              bestParents [(bestParent pop2r)]
              ]
         [:ok [
-                noParents
-                nInds
-                bestParents
-                ]
+               noParents
+               nInds
+               bestParents
+               ]
          ]
         )
       )
@@ -178,14 +211,31 @@
            ]
 
       (when res
-        (send (.manager self)
-          poolManager/updatePool
-          (updatePoolFunc
-            @(.table @(.manager self))
-            subpop noParents
-            nInds bestParents
+        (let [
+               temp (updatePoolFunc
+                      @(.table @(.manager self))
+                      subpop noParents
+                      nInds bestParents @(.poolSize @(.manager self))
+                      )
+               ]
+          ;          (println "news:" (count nInds))
+          (send (.manager self)
+            poolManager/updatePool
+            temp
             )
+
+          ;          (send pea/contador inc)
+          ;
+          ;          (when (= @pea/contador 200)
+          ;            (send pea/contador #(identity %2) 0)
+          ;            (let [
+          ;                   st (pea/get-status temp)
+          ;                   ]
+          ;              (println "Data:" (str st) (count nInds))
+          ;              )
+          ;            )
           )
+
         (send (.manager self) poolManager/evolveDone *agent*)
         (send (.profiler self) profiler/iteration nInds)
         )
@@ -221,6 +271,7 @@
     self
     )
 
+  finalize/Finalize
   (finalize [self]
     self
     )

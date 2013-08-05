@@ -20,13 +20,14 @@
     (swap! (.pools self) #(identity %2) ppools)
     (send (.profiler self) profiler/initEvol (.getTime (Date.)))
 
+    (swap! (.endEvol self) #(identity %2) false)
+    (swap! (.numberOfEvals self) #(identity %2) 0)
+
     (doseq [p ppools]
       ;        (send p poolManager/setPoolsManager *agent*)
       (send p poolManager/sReps)
       (send p poolManager/sEvals)
       )
-    (swap! (.endEvol self) #(identity %2) false)
-    (swap! (.numberOfEvals self) #(identity %2) 0)
 
     self
     )
@@ -39,39 +40,34 @@
 
   (poolManagerEnd [self pid]
     ;    (println "manager/poolManagerEnd" pid)
-    (send pid poolManager/finalize)
-    (if (empty? (swap! (.pools self) #(disj % pid)))
-      (do
-        ;        (println "manager/finalize")
-        (manager/finalize self)
-        )
+    (send pid finalize/finalize)
+    ; Cuando llega el último reporte de finalizacion:
+    (when (empty? (swap! (.pools self) #(disj % pid)))
+      ;        (println "manager/finalize")
+      (finalize/finalize self)
       )
     self
     )
 
-  (endEvol [self t]
-    ;    (println "Acabada una evolucion!")
-    (if (not @(.endEvol self))
+  (solutionReached [self _]
+    ;    (println "solutionReachedByPoolManager")
+    (if-not @(.endEvol self)
       (do
-        (send (.profiler self) profiler/endEvol t @(.numberOfEvals self))
+        (send (.profiler self) profiler/endEvol (.getTime (Date.)) @(.numberOfEvals self))
         (swap! (.endEvol self) #(identity %2) true)
         )
       )
-    self
-    )
-
-  (solutionReachedByPoolManager [self _]
-    ;    (println "solutionReachedByPoolManager")
     (doseq [p @(.pools self)]
-      (send p poolManager/solutionReachedbyAny)
+      (send p poolManager/solutionReachedbyPool)
       ;      (println "manager/finalize")
-      (manager/finalize self)
+      (finalize/finalize self)
       )
     self
     )
 
+  finalize/Finalize
   (finalize [self]
-    ;    (println "report/mkExperiment")
+;    (println "mkExperiment in manager")
     (send (.report self) report/mkExperiment)
     self
     )

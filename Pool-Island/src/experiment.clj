@@ -21,37 +21,35 @@
   )
 
 (defn r1 [pprofiler preport]
-
   (let [
          popSize 256
          chromosomeSize 128
          conf {
-                :evaluatorsCount 1
-                :evaluatorsCapacity 20
-                :reproducersCount 10
-                :reproducersCapacity 20
-                ;              :report preport
-                ;              :profiler pprofiler
+                :evaluatorsCount 4
+                :evaluatorsCapacity 50 ; 20
+                :reproducersCount 5 ;10
+                :reproducersCapacity 50 ; 20
                 }
 
-         lmanager (agent (manager/create pprofiler preport)
-                    ;                              :error-mode :continue
+         lmanager (agent (manager/create pprofiler preport) ;                              :error-mode :continue
                     :error-handler pea/manager-error)
 
-         p1 (agent (poolManager/create pprofiler lmanager)
-              ;                        :error-mode :continue
+         p1 (agent (poolManager/create pprofiler lmanager) ;                        :error-mode :continue
               :error-handler pea/poolManager-error)
-
          ]
 
     (send pprofiler profiler/configuration conf 1)
 
-    (send p1 poolManager/init (assoc conf :population (genInitPop popSize chromosomeSize)))
+    (send p1 poolManager/init (assoc conf
+                                :population (genInitPop popSize chromosomeSize)
+                                )
+      )
+
     (send p1 poolManager/migrantsDestination [p1])
+
     (send lmanager manager/init #{p1})
 
     )
-
   :ok )
 
 
@@ -62,34 +60,31 @@
          chromosomeSize 128
 
          conf {
-                :evaluatorsCount 5
-                :evaluatorsCapacity 20
+                :evaluatorsCount 4
+                :evaluatorsCapacity 50
                 :reproducersCount 5
-                :reproducersCapacity 20
-                ;              :report preport
-                ;              :profiler pprofiler
+                :reproducersCapacity 50
                 }
 
-         lmanager (agent (manager/create pprofiler preport)
-                    ;                              :error-mode :continue
+         lmanager (agent (manager/create pprofiler preport) ;                              :error-mode :continue
                     :error-handler pea/manager-error)
 
-         p1 (agent (poolManager/create pprofiler lmanager)
-              ;                        :error-mode :continue
+         p1 (agent (poolManager/create pprofiler lmanager) ;                        :error-mode :continue
               :error-handler pea/poolManager-error)
 
-         p2 (agent (poolManager/create pprofiler lmanager)
-              ;                        :error-mode :continue
+         p2 (agent (poolManager/create pprofiler lmanager) ;                        :error-mode :continue
               :error-handler pea/poolManager-error)
 
          ]
 
     (send pprofiler profiler/configuration conf 2)
 
-    (send p1 poolManager/init (assoc conf :population (genInitPop popSize chromosomeSize)))
+    (send p1 poolManager/init (assoc conf
+                                :population (genInitPop popSize chromosomeSize)))
     (send p1 poolManager/migrantsDestination [p2])
 
-    (send p2 poolManager/init (assoc conf :population (genInitPop popSize chromosomeSize)))
+    (send p2 poolManager/init (assoc conf
+                                :population (genInitPop popSize chromosomeSize)))
     (send p2 poolManager/migrantsDestination [p1])
 
     (send lmanager manager/init #{p1 p2})
@@ -97,4 +92,3 @@
     )
 
   :ok )
-

@@ -13,6 +13,7 @@
 ;(System/setOut fileStream)
 ;(System/setErr fileStream)
 
+(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/util.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/protocols.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/types.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/factories.clj")
@@ -28,12 +29,10 @@
   (ShedulingUtility/start)
 
   (let [
-         eProfiler (agent (profiler/create)
-                     ;                        :error-mode :continue
+         eProfiler (agent (profiler/create) ;                        :error-mode :continue
                      :error-handler pea/profiler-error)
 
-         eReport (agent (report/create eProfiler)
-                   ;                        :error-mode :continue
+         eReport (agent (report/create eProfiler) ;                        :error-mode :continue
                    :error-handler pea/report-error)
 
          ]
@@ -41,16 +40,12 @@
     (send eProfiler profiler/init eReport)
 
     (send eReport report/session
-      ;      (vec (for [_ (range 1)] #(r2 eProfiler eReport)))
+      (vec (for [_ (range 3)] [#(r2 eProfiler eReport) "r2"]))
 
-      [
-        #(r1 eProfiler eReport)
-        ;                                 #(r2 eProfiler eReport)
-        ;                                 #(r1 eProfiler eReport)
-        ;                                 #(r2 eProfiler eReport)
-        ;                                 #(r1 eProfiler eReport)
-        ;                                 #(r2 eProfiler eReport)
-        ]
+      ;      [
+      ;        [#(r1 eProfiler eReport) "r1"]
+      ;        ;        [#(r2 eProfiler eReport) "r2"]
+      ;        ]
 
       )
     )

@@ -29,6 +29,7 @@
                     ind
                     )
                   )
+
            _ (if (empty? sels)
                (do
                  ;        (println "No hay casos en estado 1")
@@ -39,23 +40,18 @@
                (do
                  (let [
                         nSels (map (fn [ind]
-                                     (do
-                                       (let [
-                                              fit (evaluator/maxOnes ind)
-                                              l (count ind)
-                                              ]
+                                     (let [
+                                            fit (evaluator/maxOnes ind)
+                                            l (count ind)
+                                            ]
 
-                                         (if (= fit l)
-                                           (do
-                                             (send (.manager self) poolManager/solutionReachedbyEvaluator *agent*)
-                                             )
-                                           )
-
-                                         [ind [fit 2]]
-
+                                       (when (< (- l fit) 3)
+                                         (send (.manager self) poolManager/solutionReachedbyEvaluator ind *agent*)
                                          )
 
+                                       [ind [fit 2]]
                                        )
+
                                      ) sels)
                         ]
 
@@ -73,6 +69,7 @@
     self
     )
 
+  finalize/Finalize
   (finalize [self]
     (send (.manager self) poolManager/evaluatorFinalized *agent*)
     self

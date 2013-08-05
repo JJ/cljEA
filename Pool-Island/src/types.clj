@@ -8,7 +8,7 @@
    endEvol numberOfEvals])
 
 (defrecord TPoolManager
-  [table solutionReached migrantsDestination
+  [table active migrantsDestination
    profiler manager pmConf
    evals reps poolSize])
 
@@ -111,7 +111,12 @@
   (print-error the-agent exception)
   )
 
-(def contador (agent 0 :error-handler pea/contador-error))
+(def contador (atom 0
+                ;                :error-handler pea/contador-error
+                )
+  )
+
+;(add-watch contador :log #(println "contador:" %4))
 
 (defn merge-tables-function [v1 v2]
   (when (or

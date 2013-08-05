@@ -12,11 +12,33 @@
 
 (defn create [pprofiler pmanager]
   ;  (defrecord TPoolManager
-  ;    [table solutionReached migrantsDestination
+  ;    [table active migrantsDestination
   ;     profiler manager pmConf
   ;     evals reps poolSize])
   ;  (println "Creando poolmanagers")
-  (pea.TPoolManager. (ref {}) (atom 0) (atom 0) pprofiler pmanager (atom 0) (atom 0) (atom 0) (atom 0))
+  (let [
+         pp (ref {})
+         log (fn [key identity old new]
+
+               (swap! pea/contador inc)
+
+               (when (= @pea/contador 600)
+                 (let [
+                        st (pea/get-status new)
+                        ]
+                   (swap! pea/contador (fn [n nv]
+                                         ;                                         (println "Cambiando de:" n "a" nv)
+                                         nv) 0)
+                   (println "Data evaluator:" (str st))
+                   )
+                 )
+               )
+         ]
+
+    ;    (add-watch pp :log log)
+
+    (pea.TPoolManager. pp (atom true) (atom 0) pprofiler pmanager (atom 0) (atom 0) (atom 0) (atom 0))
+    )
   )
 
 (ns reproducer)

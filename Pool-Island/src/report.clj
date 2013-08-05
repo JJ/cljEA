@@ -45,13 +45,19 @@
     )
 
   (mkExperiment [self]
-    (println "mkExperiment")
-    (let [insts @(.instances self)]
+    (let [
+           insts @(.instances self)
+           ]
       (when-not (empty? insts)
-        (println (format "Doing experiment: %1s" ""))
-        ((peek insts))
-        (swap! (.instances self) #(identity %2) (pop insts))
-        ;        (swap! (.numberOfExperiments self) dec)
+        (let [
+               [exp name] (peek insts)
+               ]
+          (println (format "Doing experiment: %1s" name))
+          (exp)
+          (swap! (.instances self) #(identity %2) (pop insts))
+          ;        (swap! (.numberOfExperiments self) dec)
+          )
+
         )
       )
     self
