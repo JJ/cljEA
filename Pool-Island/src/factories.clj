@@ -4,7 +4,7 @@
                pidPoolManager ; agent
                pidProfiler ; agent
                ]
-  ;(defrecord TEvaluator [manager profiler])
+  ;(defrecord TEvaluator [manager profiler iterations])
   (pea.TEvaluator. pidPoolManager pidProfiler)
   )
 
@@ -35,9 +35,11 @@
                )
          ]
 
-    ;    (add-watch pp :log log)
+    ;        (add-watch pp :log log)
 
-    (pea.TPoolManager. pp (atom true) (atom 0) pprofiler pmanager (atom 0) (atom 0) (atom 0) (atom 0))
+    (pea.TPoolManager. pp
+      (atom true) (atom 0) pprofiler
+      pmanager (atom 0) (atom 0) (atom 0) (atom 0) (atom 0))
     )
   )
 
@@ -53,26 +55,26 @@
 
 (defn create []
   ;  (defrecord TProfiler
-  ;    [conf report initEvol nIslands iterations emigrations])
+  ;    [conf manager initEvol nIslands iterations emigrations])
   (pea.TProfiler. (atom 0) (atom 0) (atom 0) (atom 0) (atom 0) (atom 0))
-  )
-
-(ns report)
-
-(defn create [eProfiler]
-  ;  (defrecord TReport
-  ;    [results numberOfExperiments profiler instances])
-  (pea.TReport. (atom []) (atom 0) eProfiler (atom []))
   )
 
 (ns manager)
 
-(defn create [pprofiler preport]
+(defn create [eProfiler]
+  ;  (defrecord TReport
+  ;    [results numberOfExperiments profiler instances])
+  (pea.TManager. (atom []) (atom 0) eProfiler (atom []))
+  )
+
+(ns islandManager)
+
+(defn create [pprofiler pmanager]
   ;  (defrecord TManager
   ;    [pools ; set
-  ;     profiler report
+  ;     profiler manager
   ;     endEvol numberOfEvals])
-  (pea.TManager.
-    (atom #{}) pprofiler preport
+  (pea.TIslandManager.
+    (atom #{}) pprofiler pmanager
     (atom 0) (atom 0))
   )

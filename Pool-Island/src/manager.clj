@@ -11,64 +11,63 @@
 
 (ns pea)
 
-(import 'java.util.Date)
+(use '[clojure.java.io :only (writer file)])
 
 (extend-type TManager
   manager/Manager
 
-  (init [self ppools]
-    (swap! (.pools self) #(identity %2) ppools)
-    (send (.profiler self) profiler/initEvol (.getTime (Date.)))
+  ;  (experimentEnd [self EvolutionDelay NEmig Conf NIslands NumberOfEvals bestInd]
+  (experimentEnd [self reportData]
+    ;    (println "Best fitness:" (reportData 5))
 
-    (swap! (.endEvol self) #(identity %2) false)
-    (swap! (.numberOfEvals self) #(identity %2) 0)
+    (let [
+           nRes (swap! (.results self) #(conj %1 %2) reportData)
+           ]
 
-    (doseq [p ppools]
-      ;        (send p poolManager/setPoolsManager *agent*)
-      (send p poolManager/sReps)
-      (send p poolManager/sEvals)
-      )
-
-    self
-    )
-
-  (evalDone [self _]
-    ;    (println "entrando a evolveDone " @(.numberOfEvals self))
-    (swap! (.numberOfEvals self) inc)
-    self
-    )
-
-  (poolManagerEnd [self pid]
-    ;    (println "manager/poolManagerEnd" pid)
-    (send pid finalize/finalize)
-    ; Cuando llega el último reporte de finalizacion:
-    (when (empty? (swap! (.pools self) #(disj % pid)))
-      ;        (println "manager/finalize")
-      (finalize/finalize self)
-      )
-    self
-    )
-
-  (solutionReached [self _]
-    ;    (println "solutionReachedByPoolManager")
-    (if-not @(.endEvol self)
-      (do
-        (send (.profiler self) profiler/endEvol (.getTime (Date.)) @(.numberOfEvals self))
-        (swap! (.endEvol self) #(identity %2) true)
+      (when (= @(.numberOfExperiments self) 1)
+        (println "all ends")
+        ;        (with-open [w (writer (file "../results.csv"))]
+        ;          (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount,BestSol\n")
+        ;          (doseq [[EvolutionDelay1 NEmig1 Conf1 NIslands1 NumberOfEvals1 BestSol] nRes]
+        ;            (let [
+        ;                   Ec (:evaluatorsCount Conf1)
+        ;                   Rc (:reproducersCount Conf1)
+        ;                   ]
+        ;              (.write w (format "%1.6f,%2d,%3d,%4d,%5d,%6d,%7d \n" EvolutionDelay1 NumberOfEvals1 NEmig1 Ec Rc NIslands1 BestSol))
+        ;              )
+        ;            )
+        ;          )
+        (ShedulingUtility/shutdown)
         )
       )
-    (doseq [p @(.pools self)]
-      (send p poolManager/solutionReachedbyPool)
-      ;      (println "manager/finalize")
-      (finalize/finalize self)
+
+    (swap! (.numberOfExperiments self) dec)
+    self
+    )
+
+  (mkExperiment [self]
+    (let [
+           insts @(.instances self)
+           ]
+      (when-not (empty? insts)
+        (let [
+               [exp name] (peek insts)
+               ]
+          (println (format "Doing experiment: %1s" name))
+          (exp)
+          (swap! (.instances self) #(identity %2) (pop insts))
+          ;        (swap! (.numberOfExperiments self) dec)
+          )
+
+        )
       )
     self
     )
 
-  finalize/Finalize
-  (finalize [self]
-;    (println "mkExperiment in manager")
-    (send (.report self) report/mkExperiment)
+  (session [self Funs]
+    (swap! (.instances self) #(identity %2) Funs)
+    (swap! (.numberOfExperiments self) #(identity %2) (count Funs))
+    (manager/mkExperiment self)
     self
     )
 

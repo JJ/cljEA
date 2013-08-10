@@ -14,29 +14,35 @@
 (import 'java.util.Date)
 (import 'sheduling.ShedulingUtility)
 
-(require '[clojure.set])
-
 (extend-type TPoolManager
   poolManager/PoolManager
   ;agent que comparte un conjunto de individuos con
   ;agentes evaluadores y reproductores
+
+  (initEvaluations [self cant]
+    (swap! (.evaluations self) #(identity %2) cant)
+    self
+    )
+
   (init [self conf]
     (swap! (.pmConf self) #(identity %2)
       (dissoc conf :population )
       )
-
+    ;    (println "Poniendo sets en .evals")
     (swap! (.evals self) #(identity %2)
       (set (for [_ (range (:evaluatorsCount conf))]
              (agent (evaluator/create *agent* (.profiler self)) ;               :error-mode :continue
                :error-handler pea/evaluator-error)
-             ))
+             )
+        )
       )
 
     (swap! (.reps self) #(identity %2)
       (set (for [_ (range (:reproducersCount conf))]
              (agent (reproducer/create *agent* (.profiler self)) ;               :error-mode :continue
                :error-handler pea/reproducer-error)
-             ))
+             )
+        )
       )
 
     (swap! (.active self) #(identity %2) true)
@@ -49,7 +55,7 @@
 
       (dosync
         (alter (.table self) #(identity %2)
-          (zipmap population (for [_ population] [-1 1]))
+          (into {} (for [p population] [p [-1 1]]))
           )
         )
       )
@@ -136,11 +142,29 @@
     self
     )
 
-  (evalDone [self pid]
+  (evalDone [self pid n]
     (if @(.active self)
       (do
-        (send (.manager self) manager/evalDone *agent*)
-        (send pid evaluator/evaluate (:evaluatorsCapacity @(.pmConf self)))
+        (send (.manager self) islandManager/evalDone *agent* n)
+
+        (let [
+               evaluatorsCapacity (case problem/terminationCondition
+                                    :fitnessTerminationCondition (:evaluatorsCapacity @(.pmConf self))
+                                    ; else
+                                    (mod
+                                      (swap! (.evaluations self) #(- %1 %2) n)
+                                      (:evaluatorsCapacity @(.pmConf self)))
+                                    )
+               ]
+          (if (> evaluatorsCapacity 0)
+            (send pid evaluator/evaluate evaluatorsCapacity)
+            (do; acabamos pues se hicieron todas las evaluaciones (o más)
+              (poolManager/evaluationsDone self)
+              )
+            )
+
+          )
+
         )
       (send pid finalize/finalize)
       )
@@ -156,26 +180,30 @@
 
   (sEvals [self]
     (doseq [e @(.evals self)]
-      (send e evaluator/evaluate (:evaluatorsCapacity @(.pmConf self)))
+      (send e evaluator/evaluate 0)
       )
     self
     )
 
-  (solutionReachedbyPool [self]
+  (deactivate! [self]
+    (swap! (.active self) #(identity %2) false)
+    self
+    )
+
+  (solutionReachedbyEvaluator [self [ind fit] pid]
+    ;    (println "solutionReachedbyEvaluator" fit)
     (when @(.active self)
-      ;      (doseq [e (into @(.reps self) @(.evals self))]
-      ;        (send e finalize/finalize)
-      ;        )
+      ;      (send (.manager self) islandManager/endEvol (.getTime (Date.)))
+      (send (.manager self) islandManager/solutionReached *agent*)
       (swap! (.active self) #(identity %2) false)
       )
     self
     )
 
-  (solutionReachedbyEvaluator [self solution pid]
-    ;        (println "solutionReachedbyEvaluator" solution)
+  (evaluationsDone [self]
     (when @(.active self)
-      ;      (send (.manager self) manager/endEvol (.getTime (Date.)))
-      (send (.manager self) manager/solutionReached *agent*)
+      ;      (send (.manager self) islandManager/endEvol (.getTime (Date.)))
+      (send (.manager self) islandManager/numberOfEvaluationsReached *agent*)
       (swap! (.active self) #(identity %2) false)
       )
     self
@@ -209,9 +237,20 @@
     self
     )
 
+  (bestSolution [self]
+    (let [
+           evals (for [[ind [fit state]] @(.table self)
+                       :when (= state 2)]
+                   [ind fit]
+                   )
+           ]
+      (reduce #(if (< (%1 1) (%2 1)) %2 %1) evals)
+      )
+    )
+
   finalize/Finalize
   (finalize [self]
-    (send (.manager self) manager/poolManagerEnd *agent*)
+    (send (.manager self) islandManager/poolManagerEnd *agent*)
     self
     )
 

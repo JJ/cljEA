@@ -13,6 +13,7 @@
 
 (import 'java.util.Date)
 (require '[clojure.set])
+(require '[clojure.string :as str])
 
 (defn extractSubpopulation
   "returns: (seq [ind fitness])"
@@ -22,23 +23,14 @@
          ]
     (take n res)
     )
-  ;  (send (.hs self) #(conj %1 %2) {:table table :extractSubpopulationSels extractSubpopulationSels})
-  ;  (send (.hs self)  #(identity %2) {:table table :extractSubpopulationSels extractSubpopulationSels})
-
-
-  ;  (def ^:private sels (pea/selectPairs table 2))
-  ;  (pea/checkListIntPairs extractSubpopulationSels)
-  ;  (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":" extractSubpopulationSels)))
   )
+
 (defn bestParent [pop2r]
-  ;  (def ^:private population (sort #(> (%1 1) (%2 1)) pop2r)) ; (OJO: Refactorizar)
-  ;  (first population)
   (reduce #(if (> (%1 1) (%2 1)) %1 %2) pop2r)
   )
 
-(defn updatePoolFunc [table subpop noParents
-                      nInds bestParents poolSize]
-
+(defn mergeFunction [table subpop noParents
+                     nInds bestParents poolSize]
   (let [
          p (concat noParents bestParents subpop)
          l1 (for [[i j] p] [i [j 2]])
@@ -52,7 +44,8 @@
                                                :when (= state 2)]
                                            ind
                                            )
-                                         ))
+                                         )
+                    )
          more2Drop (- (+ (count sub1) (count restOlds)) poolSize)
          result (if (> more2Drop 0)
                   (apply dissoc restOlds (take more2Drop
@@ -60,7 +53,8 @@
                                                  :when (= state 1)]
                                              ind
                                              )
-                                           ))
+                                           )
+                    )
                   restOlds
                   )
          ;         result (into table1 res)
@@ -70,7 +64,6 @@
     (into result sub1)
     ;    (into restOlds sub1)
     )
-
   )
 
 (defn selectPop2Reproduce [population n]
@@ -116,34 +109,31 @@
   [[[ind1 f1] [ind2 f2]]]
 
   (let [
-         changeB (fn [b]
-                   (if (= b \1) \0 \1)
-                   )
-         ind-length (count ind1)
-         cross-point (rand-int ind-length)
-         cross1 (split-at cross-point ind1)
-         cross2 (split-at cross-point ind2)
+         indLength (count ind1)
+         crossPoint (rand-int indLength)
+         cross1 (split-at crossPoint ind1)
+         cross2 (split-at crossPoint ind2)
          child1 (concat (nth cross1 0) (nth cross2 1))
-         muttation-point (rand-int ind-length)
-         m-child (split-at (dec muttation-point) child1)
-         m1 (nth m-child 0)
-         m2 (nth m-child 1)
+         muttationPoint (rand-int indLength)
+         mChild (split-at (dec muttationPoint) child1)
+         m1 (nth mChild 0)
+         m2 (nth mChild 1)
          m3 (rest m2)
-         bit1 (changeB (first m2))
+         bit1 (problem/changeGen (first m2))
          result1 (concat m1 (conj m3 bit1))
          result2 (concat (nth cross2 0) (nth cross1 1))
-         res1 (clojure.string/join result1)
-         res2 (clojure.string/join result2)
+         res1 (str/join result1)
+         res2 (str/join result2)
          ]
 
     ;    (when (or
     ;          (> f1 125)
     ;          (> f2 125)
     ;          )
-    ;      (when (= 128 (evaluator/maxOnes res1))
+    ;      (when (= 128 (problem/function res1))
     ;        (println res1)
     ;        )
-    ;      (when (= 128 (evaluator/maxOnes res2))
+    ;      (when (= 128 (problem/function res2))
     ;        (println res2)
     ;        )
     ;      )
@@ -176,12 +166,7 @@
              noParents (clojure.set/difference (set subpop) (set (flatt parents2use)))
              bestParents [(bestParent pop2r)]
              ]
-        [:ok [
-               noParents
-               nInds
-               bestParents
-               ]
-         ]
+        [:ok [noParents nInds bestParents]]
         )
       )
     )
@@ -209,31 +194,14 @@
                              )
              )
            ]
-
       (when res
-        (let [
-               temp (updatePoolFunc
-                      @(.table @(.manager self))
-                      subpop noParents
-                      nInds bestParents @(.poolSize @(.manager self))
-                      )
-               ]
-          ;          (println "news:" (count nInds))
-          (send (.manager self)
-            poolManager/updatePool
-            temp
+        (send (.manager self)
+          poolManager/updatePool
+          (mergeFunction
+            @(.table @(.manager self))
+            subpop noParents
+            nInds bestParents @(.poolSize @(.manager self))
             )
-
-          ;          (send pea/contador inc)
-          ;
-          ;          (when (= @pea/contador 200)
-          ;            (send pea/contador #(identity %2) 0)
-          ;            (let [
-          ;                   st (pea/get-status temp)
-          ;                   ]
-          ;              (println "Data:" (str st) (count nInds))
-          ;              )
-          ;            )
           )
 
         (send (.manager self) poolManager/evolveDone *agent*)
@@ -245,15 +213,9 @@
     )
 
   (emigrateBest [self destination]
-
-    ;    (def ^:private Sels (pea/selectPairs @(.table @(.manager self)) 2))
-
     (let [
            sels (for [[i [f s]] @(.table @(.manager self)) :when (= s 2)] [i f])
            ]
-
-      ;    (send (.hs self) #(conj %1 %2) {:table @(.table @(.manager self)) :sels sels})
-      ;    (send (.hs self) #(identity %2) {:table @(.table @(.manager self)) :sels sels})
 
       (when (> (count sels) 0)
         (let [
@@ -264,10 +226,8 @@
           (send destination poolManager/migration p)
 
           )
-        ;        (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":" emigrateBestSels)))
         )
       )
-
     self
     )
 

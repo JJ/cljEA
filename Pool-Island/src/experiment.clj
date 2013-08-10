@@ -9,51 +9,78 @@
 ;; AGPL (http://www.gnu.org/licenses/agpl-3.0.txt) for more details.
 ;;
 
+(ns problem)
+
+(def terminationCondition :cantEvalsTerminationCondition )
+;(def terminationCondition :fitnessTerminationCondition )
+(def fitnessTerminationCondition maxOnes/fitnessTerminationCondition)
+(def changeGen maxOnes/changeGen)
+(def function maxOnes/function)
+(def genInd maxOnes/genInd)
 
 (ns experiment)
 
-(defn genInd [n]
-  (clojure.string/join "" (for [_ (range n)] (rand-int 2)))
-  )
+(require '[clojure.set :as cset])
 
-(defn genInitPop [PopSize ChromosomeSize]
-  (for [_ (range PopSize)] (genInd ChromosomeSize))
-  )
-
-(defn r1 [pprofiler preport]
+(defn r1 [pprofiler pmanager]
   (let [
-         popSize 256
-         chromosomeSize 128
+         ;         instanceFileName "../problems/uf100-01.cnf"
+         popSize 56
+         chromosomeSize 8
+         evaluatorsCount 1
+         evaluatorsCapacity 50 ; 20
+         reproducersCount 1 ;10
+         reproducersCapacity 50 ; 20
+         evaluations 400
+
          conf {
-                :evaluatorsCount 4
-                :evaluatorsCapacity 50 ; 20
-                :reproducersCount 5 ;10
-                :reproducersCapacity 50 ; 20
+                :evaluatorsCount evaluatorsCount
+                :evaluatorsCapacity evaluatorsCapacity
+                :reproducersCount reproducersCount
+                :reproducersCapacity reproducersCapacity
                 }
 
-         lmanager (agent (manager/create pprofiler preport) ;                              :error-mode :continue
-                    :error-handler pea/manager-error)
+         mIslandManager (agent (islandManager/create pprofiler pmanager) ;                              :error-mode :continue
+                          :error-handler pea/manager-error)
 
-         p1 (agent (poolManager/create pprofiler lmanager) ;                        :error-mode :continue
+         p1 (agent (poolManager/create pprofiler mIslandManager) ;                        :error-mode :continue
               :error-handler pea/poolManager-error)
          ]
 
     (send pprofiler profiler/configuration conf 1)
 
     (send p1 poolManager/init (assoc conf
-                                :population (genInitPop popSize chromosomeSize)
+                                :population (problem/genInitPop popSize chromosomeSize)
                                 )
       )
 
     (send p1 poolManager/migrantsDestination [p1])
 
-    (send lmanager manager/init #{p1})
+    (send mIslandManager islandManager/init #{p1})
 
+    (let [
+           pools #{p1}
+           poolsCount 1
+           cociente (quot evaluations poolsCount)
+           resto (rem evaluations poolsCount)
+           [primeros ultimos] (split-at resto pools)
+           ]
+
+      (doseq [p primeros]
+        (send p poolManager/initEvaluations (inc cociente))
+        )
+
+      (doseq [p ultimos]
+        (send p poolManager/initEvaluations cociente)
+        )
+      )
+
+    (send mIslandManager islandManager/start)
     )
+
   :ok )
 
-
-(defn r2 [pprofiler preport]
+(defn r2 [pprofiler pmanager]
 
   (let [
          popSize 256
@@ -66,13 +93,13 @@
                 :reproducersCapacity 50
                 }
 
-         lmanager (agent (manager/create pprofiler preport) ;                              :error-mode :continue
-                    :error-handler pea/manager-error)
+         mIslandManager (agent (islandManager/create pprofiler pmanager) ;                              :error-mode :continue
+                          :error-handler pea/islandManager-error)
 
-         p1 (agent (poolManager/create pprofiler lmanager) ;                        :error-mode :continue
+         p1 (agent (poolManager/create pprofiler mIslandManager) ;                        :error-mode :continue
               :error-handler pea/poolManager-error)
 
-         p2 (agent (poolManager/create pprofiler lmanager) ;                        :error-mode :continue
+         p2 (agent (poolManager/create pprofiler mIslandManager) ;                        :error-mode :continue
               :error-handler pea/poolManager-error)
 
          ]
@@ -80,14 +107,14 @@
     (send pprofiler profiler/configuration conf 2)
 
     (send p1 poolManager/init (assoc conf
-                                :population (genInitPop popSize chromosomeSize)))
+                                :population (problem/genInitPop popSize chromosomeSize)))
     (send p1 poolManager/migrantsDestination [p2])
 
     (send p2 poolManager/init (assoc conf
-                                :population (genInitPop popSize chromosomeSize)))
+                                :population (problem/genInitPop popSize chromosomeSize)))
     (send p2 poolManager/migrantsDestination [p1])
 
-    (send lmanager manager/init #{p1 p2})
+    (send mIslandManager islandManager/init #{p1 p2})
 
     )
 

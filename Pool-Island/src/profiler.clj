@@ -15,7 +15,7 @@
   profiler/Profiler
 
   (init [self rprt]
-    (swap! (.report self) #(identity %2) rprt)
+    (swap! (.manager self) #(identity %2) rprt)
     self
     )
 
@@ -39,7 +39,7 @@
 
   (iteration [self population]
     (let [
-           popEval (map #(evaluator/maxOnes %) population)
+           popEval (map #(problem/function %) population)
            ]
 
       (swap! (.iterations self)
@@ -54,14 +54,14 @@
     self
     )
 
-  (endEvol [self t numberOfEvals]
+  (endEvol [self evolData]
     (let [
-           evolutionDelay (/ (- t @(.initEvol self)) 1000.0)
+           evolutionDelay (/ (- (:time evolData) @(.initEvol self)) 1000.0)
            ]
-
-      (send @(.report self) report/experimentEnd
-        evolutionDelay (count @(.emigrations self))
-        @(.conf self) @(.nIslands self) numberOfEvals)
+      (send @(.manager self) manager/experimentEnd
+        [evolutionDelay (count @(.emigrations self))
+         @(.conf self) @(.nIslands self) (:numberOfEvals evolData) (:bestSolution evolData)]
+        )
       )
 
     self

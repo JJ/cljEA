@@ -9,12 +9,6 @@
 ;; AGPL (http://www.gnu.org/licenses/agpl-3.0.txt) for more details.
 ;;
 
-(ns evaluator)
-
-(defn maxOnes [L]
-  (count (for [l L :when (= l \1)] l))
-  )
-
 (ns pea)
 
 (extend-type TEvaluator
@@ -29,36 +23,33 @@
                     ind
                     )
                   )
-
            _ (if (empty? sels)
                (do
-                 ;        (println "No hay casos en estado 1")
-                 ;        (println "---------------------------------------------")
                  (send (.manager self) poolManager/evalEmpthyPool *agent*)
                  )
-
                (do
                  (let [
-                        nSels (map (fn [ind]
-                                     (let [
-                                            fit (evaluator/maxOnes ind)
-                                            l (count ind)
-                                            ]
+                        nSels
+                        (map
+                          (fn [ind]
+                            (let [
+                                   fit (problem/function ind)
+                                   ]
 
-                                       (when (< (- l fit) 3)
-                                         (send (.manager self) poolManager/solutionReachedbyEvaluator ind *agent*)
-                                         )
+                              (when (= problem/terminationCondition :fitnessTerminationCondition )
+                                (when (problem/fitnessTerminationCondition ind fit)
+                                  (send (.manager self) poolManager/solutionReachedbyEvaluator [ind fit] *agent*)
+                                  )
+                                )
 
-                                       [ind [fit 2]]
-                                       )
-
-                                     ) sels)
+                              [ind [fit 2]]
+                              )
+                            )
+                          sels
+                          )
                         ]
-
-                   ;        (println NSels)
-                   ;        (assoc self :table (into (:table self) NSels))
                    (send (.manager self) poolManager/add2Pool-Ind-Fit-State nSels)
-                   (send (.manager self) poolManager/evalDone *agent*)
+                   (send (.manager self) poolManager/evalDone *agent* (count sels))
                    )
                  )
                )

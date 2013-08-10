@@ -23,24 +23,26 @@
 
 (defprotocol Evaluator
   (evaluate [self N])
-  (finalize [self])
   )
 
-(ns manager)
+(ns islandManager)
 
-(defprotocol Manager
+(defprotocol IslandManager
+  (start [self])
   (init [self ppools])
-  (evalDone [self pid])
+  (evalDone [self pid n])
   (poolManagerEnd [self pid])
   ;  (endEvol [self t])
   (solutionReached [self pid])
-  (finalize [self])
+  (numberOfEvaluationsReached [self pid])
+  (bestSolution [self])
   )
 
 (ns poolManager)
 
 (defprotocol PoolManager
   (init [self conf])
+  (initEvaluations [self cant])
   (updatePool [self newPool])
   (add2Pool-Ind-Fit-State [self individuos])
   (migrantsDestination [self Dests])
@@ -49,21 +51,22 @@
   (evaluatorFinalized [self pid])
   (reproducerFinalized [self pid])
   (evolveDone [self pid])
-  (evalDone [self pid])
+  (evalDone [self pid n])
   (sReps [self])
   (sEvals [self])
-  (solutionReachedbyPool [self])
+  (deactivate! [self])
   (solutionReachedbyEvaluator [self solution pid])
+  (evaluationsDone [self])
   (evalEmpthyPool [self pid])
   (repEmpthyPool [self pid])
-  (finalize [self])
+  (bestSolution [self])
   )
 
-(ns report)
+(ns manager)
 
-(defprotocol Report
-
-  (experimentEnd [self EvolutionDelay NEmig Conf NIslands NumberOfEvals])
+(defprotocol Manager
+;  (experimentEnd [self EvolutionDelay NEmig Conf NIslands NumberOfEvals])
+  (experimentEnd [self reportData])
   (mkExperiment [self])
   (session [self Funs])
   )
@@ -73,7 +76,6 @@
 (defprotocol Reproducer
   (evolve [self n])
   (emigrateBest [self destination])
-  (finalize [self])
   )
 
 (ns profiler)
@@ -84,6 +86,5 @@
   (migration [self [_ _] t])
   (initEvol [self t])
   (iteration [self population])
-  (endEvol [self t numberOfEvals])
-  (finalize [self])
+  (endEvol [self evolData])
   )

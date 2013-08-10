@@ -2,20 +2,20 @@
 
 (defrecord TEvaluator [manager profiler])
 
-(defrecord TManager
+(defrecord TIslandManager
   [pools ; set
-   profiler report
+   profiler manager
    endEvol numberOfEvals])
 
 (defrecord TPoolManager
   [table active migrantsDestination
    profiler manager pmConf
-   evals reps poolSize])
+   evals reps poolSize evaluations])
 
 (defrecord TProfiler
-  [conf report initEvol nIslands iterations emigrations])
+  [conf manager initEvol nIslands iterations emigrations])
 
-(defrecord TReport
+(defrecord TManager
   [results numberOfExperiments profiler instances])
 
 (defrecord TReproducer [manager profiler])
@@ -83,7 +83,7 @@
 
   )
 
-(defn manager-error [the-agent exception]
+(defn islandManager-error [the-agent exception]
   (print-error the-agent exception)
   )
 
@@ -99,7 +99,7 @@
   (print-error the-agent exception)
   )
 
-(defn report-error [the-agent exception]
+(defn manager-error [the-agent exception]
   (print-error the-agent exception)
   )
 

@@ -1,13 +1,16 @@
 (ns sequential.experiment-run)
 
+(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/util.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/protocols.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/types.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/factories.clj")
+(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/problems.clj")
+
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/evaluator.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/manager.clj")
+(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/islandManager.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/poolManager.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/profiler.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/report.clj")
+(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/manager.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/reproducer.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/experiment.clj")
 
@@ -64,7 +67,7 @@
                         (let [
                                toEvalEvaluated (for [i nInds]
                                                  (let [
-                                                        cant (evaluator/maxOnes i)
+                                                        cant (maxOne/function i)
                                                         ]
                                                    (when (= cant (count i))
                                                      (swap! bestSolution #(identity %2) cant)
