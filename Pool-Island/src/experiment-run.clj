@@ -41,7 +41,7 @@
     (send eProfiler profiler/init eManager)
 
     (send eManager manager/session ; RUN!
-      (vec (for [_ (range 2)] [#(r1 eProfiler eManager) "r1"]))
+      (vec (for [_ (range 3)] [#(r2 eProfiler eManager) "r2"]))
 
       ;      [
       ;        [#(r1 eProfiler eManager) "r1"]

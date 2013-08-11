@@ -35,7 +35,7 @@
                )
          ]
 
-    ;        (add-watch pp :log log)
+;            (add-watch pp :log log)
 
     (pea.TPoolManager. pp
       (atom true) (atom 0) pprofiler
@@ -43,11 +43,23 @@
     )
   )
 
+(ns islandManager)
+
+(defn create [pprofiler pmanager]
+  ;  (defrecord TManager
+  ;    [pools ; set
+  ;     profiler manager
+  ;     endEvol numberOfEvals
+  ;     solutions])
+  (pea.TIslandManager.
+    (atom #{}) pprofiler pmanager
+    (atom 0) (atom 0) (atom []))
+  )
+
 (ns reproducer)
 
 (defn create [pidPoolManager pidProfiler]
   ;(defrecord TReproducer [manager profiler])
-  ;  (println "creando repro con pmanager:" (class pidPoolManager))
   (pea.TReproducer. pidPoolManager pidProfiler)
   )
 
@@ -65,16 +77,4 @@
   ;  (defrecord TReport
   ;    [results numberOfExperiments profiler instances])
   (pea.TManager. (atom []) (atom 0) eProfiler (atom []))
-  )
-
-(ns islandManager)
-
-(defn create [pprofiler pmanager]
-  ;  (defrecord TManager
-  ;    [pools ; set
-  ;     profiler manager
-  ;     endEvol numberOfEvals])
-  (pea.TIslandManager.
-    (atom #{}) pprofiler pmanager
-    (atom 0) (atom 0))
   )

@@ -15,7 +15,6 @@
   evaluator/Evaluator
 
   (evaluate [self n]
-    ;    (println "evaluate")
     (let [
            sels (take n
                   (for [[ind [_ state]] @(.table @(.manager self))
@@ -55,8 +54,6 @@
                )
            ]
       )
-
-    ;    (println "Saliendo de eval!!!!")
     self
     )
 

@@ -1,13 +1,15 @@
-
 (ns problem)
 
-(declare terminationCondition fitnessTerminationCondition changeGen function genInd)
+(declare terminationCondition fitnessTerminationCondition
+  changeGen function genInd genMerger popSize chromosomeSize)
 
 (defn genInitPop [PopSize ChromosomeSize]
   (for [_ (range PopSize)] (genInd ChromosomeSize))
   )
 
 (ns maxOnes)
+
+(require '[clojure.string :as str])
 
 (defn genInd [n]
   (clojure.string/join "" (for [_ (range n)] (rand-int 2)))
@@ -21,6 +23,130 @@
   (if (= b \1) \0 \1)
   )
 
+(def genMerger str/join)
+
 (defn fitnessTerminationCondition [ind fit]
-  (< (- (count ind) fit) 3)
+  (< (- (count ind) fit) 25)
   )
+
+(def popSize 256)
+
+(def chromosomeSize 128)
+
+
+(ns maxSAT)
+
+(require '[clojure.string :as str])
+(use '[clojure.java.io :only (reader file)])
+
+(defrecord TMaxsatProblem [clauseLength varsCount clausesCount clauses])
+
+(defn MaxSAT-ProblemLoader [instanceFileName]
+  (with-open [r (reader (file instanceFileName))]
+    (dotimes [_ 5]
+      (.readLine r)
+      )
+    (let [
+           spaceRE #"\s+0*"
+           l1 (.readLine r)
+           f1 (str/split l1 spaceRE)
+           _ (.readLine r)
+           l2 (.readLine r)
+           f2 (str/split l2 spaceRE)
+           clauseLength (Integer/parseInt (last f1))
+           varsCount (Integer/parseInt (nth f2 2))
+           clausesCount (Integer/parseInt (nth f2 3))
+           clauses (atom [])
+           ]
+
+      (loop [v []]
+        (let [
+               l (.readLine r)
+               ]
+          (if (and
+                l
+                (not= l "%")
+                )
+            (let [
+                   values (str/split (str/trim l) spaceRE)
+                   intValues (map #(Integer/parseInt %) values)
+                   ]
+              (recur (conj v (map #(if (< % 0)
+                                     [false (dec (Math/abs %))]
+                                     [true (dec %)]
+                                     )
+                               intValues)
+                       )
+                )
+              )
+            (swap! clauses #(identity %2) v)
+            )
+          )
+        )
+      (TMaxsatProblem. clauseLength varsCount clausesCount @clauses)
+      )
+    )
+  )
+
+(def instance (MaxSAT-ProblemLoader "../problems/uf100-01.cnf"))
+(def popSize 1024)
+(def chromosomeSize (.varsCount instance))
+
+(defn MaxSAT-evaluate [self solution]
+  (count (filter
+           (fn [clause]
+             (not-every? (fn [[sg val]]
+                           (not= (nth solution val) sg)
+                           ) clause)
+             )
+           (.clauses self)
+           )
+    )
+  )
+
+
+(defn function [L]
+  (MaxSAT-evaluate instance L)
+  )
+
+(defn genInd [n]
+  (for [_ (range n)] (rand-nth [true false]))
+  )
+
+(defn changeGen [b]
+  (not b)
+  )
+
+(def genMerger identity)
+
+
+(ns problem)
+
+(def problemName :maxSAT )
+;(def problemName :maxOne )
+(def terminationCondition :cantEvalsTerminationCondition )
+;(def terminationCondition :fitnessTerminationCondition )
+
+(case problemName
+
+  :maxSAT (do
+            ;(def fitnessTerminationCondition maxSAT/fitnessTerminationCondition)
+            (def changeGen maxSAT/changeGen)
+            (def function maxSAT/function)
+            (def genInd maxSAT/genInd)
+            (def genMerger maxSAT/genMerger)
+            (def popSize maxSAT/popSize)
+            (def chromosomeSize maxSAT/chromosomeSize)
+            )
+  ;sino
+  (do
+    (def fitnessTerminationCondition maxOnes/fitnessTerminationCondition)
+    (def changeGen maxOnes/changeGen)
+    (def function maxOnes/function)
+    (def genInd maxOnes/genInd)
+    (def genMerger maxOnes/genMerger)
+    (def popSize maxOnes/popSize)
+    (def chromosomeSize maxOnes/chromosomeSize)
+    )
+  )
+

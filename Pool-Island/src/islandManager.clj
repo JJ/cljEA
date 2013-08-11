@@ -50,7 +50,7 @@
     self
     )
 
-  (solutionReached [self _]
+  (solutionReached [self _ sol]
     ;    (println "solutionReachedByPoolManager")
     (if-not @(.endEvol self)
       (do
@@ -58,7 +58,7 @@
           {
             :time (.getTime (Date.))
             :numberOfEvals @(.numberOfEvals self)
-            :bestSolution -1
+            :bestSolution (sol 1)
             }
           )
         (swap! (.endEvol self) #(identity %2) true)
@@ -71,38 +71,48 @@
     self
     )
 
-  (numberOfEvaluationsReached [self _]
-    (if-not @(.endEvol self)
-      (do
-        (send (.profiler self) profiler/endEvol
-          {
-            :time (.getTime (Date.))
-            :numberOfEvals @(.numberOfEvals self)
-            :bestSolution ((islandManager/bestSolution self) 1)
-            }
-          )
-        (swap! (.endEvol self) #(identity %2) true)
+  (numberOfEvaluationsReached [self pid]
+    (swap! (.solutions self) #(conj %1 %2) (poolManager/bestSolution @pid))
+    ; Si no he acabado y pid es el ultimo pool:
+    (when (and
+            (not @(.endEvol self))
+            (empty? (swap! (.pools self) #(disj %1 %2) pid))
+            )
+      (send (.profiler self) profiler/endEvol
+        {
+          :time (.getTime (Date.))
+          :numberOfEvals @(.numberOfEvals self)
+          :bestSolution ((islandManager/bestSolution self) 1)
+          }
         )
+      (swap! (.endEvol self) #(identity %2) true)
       )
-    (doseq [p @(.pools self)]
-      (send p poolManager/deactivate!)
-      (finalize/finalize self)
-      )
+
+    ;    (if-not @(.endEvol self)
+    ;           (do
+    ;             (send (.profiler self) profiler/endEvol
+    ;               {
+    ;                 :time (.getTime (Date.))
+    ;                 :numberOfEvals @(.numberOfEvals self)
+    ;                 :bestSolution ((islandManager/bestSolution self) 1)
+    ;                 }
+    ;               )
+    ;             (swap! (.endEvol self) #(identity %2) true)
+    ;             )
+    ;           )
+    ;    (doseq [p @(.pools self)]
+    ;      (send p poolManager/deactivate!)
+    ;      (finalize/finalize self)
+    ;      )
     self
     )
 
   (bestSolution [self]
-    (let [
-           evals (map #(poolManager/bestSolution @%) @(.pools self))
-           ]
-      (reduce #(if (< (%1 1) (%2 1)) %2 %1) evals)
-      )
+    (reduce #(if (< (%1 1) (%2 1)) %2 %1) @(.solutions self))
     )
 
   finalize/Finalize
   (finalize [self]
-    ;    (println "mkExperiment in manager")
-    (send (.manager self) manager/mkExperiment)
     self
     )
 

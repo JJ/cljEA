@@ -1,5 +1,3 @@
-(ns sequential.experiment-run)
-
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/util.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/protocols.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/types.clj")
@@ -13,6 +11,8 @@
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/manager.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/reproducer.clj")
 (load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/experiment.clj")
+
+(ns sequential.experiment-run)
 
 (defn
   ^{:ids {:npop "$P'$"}} ; Para la generacion de pseudocodigo Latex
@@ -28,11 +28,10 @@
 
 
   (let [
-         popSize 256
-         chromosomeSize 128
-         initPop [[] (genInitPop popSize chromosomeSize)]
+         initPop [[] (genInitPop problem/popSize problem/chromosomeSize)]
          result (loop [population initPop]
                   (let [
+;                         _ (println "PopSize:" (+ (count (nth population 0)) (count (nth population 1))))
                          iPopEvaluated (evaluatePopulation population)
                          bestSol (findBestSolution iPopEvaluated)
                          ]
@@ -49,7 +48,7 @@
                   )
          ]
 
-    (println "The best solution is:" result)
+    (println "The value of the best solution is:" result)
     )
 
   :ok )
@@ -59,20 +58,36 @@
 ;(:require pea)
 
 (def bestSolution (atom -1))
+(def evaluations (atom 400))
 
 (runSeqEA
-  :genInitPop experiment/genInitPop
-  :evaluatePopulation (fn [[alreadyEval nInds]]
 
+  :genInitPop problem/genInitPop
+
+  :evaluatePopulation (fn [[alreadyEval nInds]]
                         (let [
-                               toEvalEvaluated (for [i nInds]
+                               sInds (case problem/terminationCondition
+                                       :fitnessTerminationCondition nInds
+                                       ; else
+                                       (let [
+                                              resX (take @evaluations nInds)
+                                              ]
+                                         (swap! evaluations #(- %1 %2) (count resX))
+                                         resX
+                                         )
+                                       )
+                               toEvalEvaluated (for [i sInds]
                                                  (let [
-                                                        cant (maxOne/function i)
+                                                        fit (problem/function i)
                                                         ]
-                                                   (when (= cant (count i))
-                                                     (swap! bestSolution #(identity %2) cant)
+
+                                                   (when (= problem/terminationCondition :fitnessTerminationCondition )
+                                                     (when (problem/fitnessTerminationCondition i fit)
+                                                       (swap! bestSolution #(identity %2) fit)
+                                                       )
                                                      )
-                                                   [i cant]
+
+                                                   [i fit]
                                                    )
                                                  )
                                ]
@@ -80,8 +95,27 @@
                           )
 
                         )
-  :findBestSolution (fn [_] @bestSolution)
-  :terminationCondition #(not= @bestSolution -1)
+
+  :findBestSolution (fn [all]
+                      (case problem/terminationCondition
+                        :fitnessTerminationCondition @bestSolution
+                        ; else
+                        (do
+                          ((reduce #(if (< (%1 1) (%2 1)) %2 %1) all) 1)
+                          )
+                        )
+                      )
+
+  :terminationCondition (fn []
+                          (case problem/terminationCondition
+                            :fitnessTerminationCondition (not= @bestSolution -1)
+                            ; else
+                            (do
+                              (= @evaluations 0)
+                              )
+                            )
+                          )
+
   :selectParents #(pea/extractSubpopulation % 30)
   :applyVariationOperators (fn [subpop]
                              (let [
@@ -97,6 +131,7 @@
                                  )
                                )
                              )
+
   :selectNewPopulation (fn [iPopEvaluated [noParents nInds bestParents]]
                          (let [
                                 cantNews (reduce + (map count [noParents nInds bestParents]))

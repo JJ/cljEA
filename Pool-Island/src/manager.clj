@@ -12,36 +12,41 @@
 (ns pea)
 
 (use '[clojure.java.io :only (writer file)])
+(import 'java.util.Date)
 
 (extend-type TManager
   manager/Manager
 
   ;  (experimentEnd [self EvolutionDelay NEmig Conf NIslands NumberOfEvals bestInd]
   (experimentEnd [self reportData]
-    ;    (println "Best fitness:" (reportData 5))
+    (println (format "Best fitness: %1d at %2d" (reportData 5) (.getTime (Date.))))
 
     (let [
            nRes (swap! (.results self) #(conj %1 %2) reportData)
            ]
 
-      (when (= @(.numberOfExperiments self) 1)
-        (println "all ends")
-        ;        (with-open [w (writer (file "../results.csv"))]
-        ;          (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount,BestSol\n")
-        ;          (doseq [[EvolutionDelay1 NEmig1 Conf1 NIslands1 NumberOfEvals1 BestSol] nRes]
-        ;            (let [
-        ;                   Ec (:evaluatorsCount Conf1)
-        ;                   Rc (:reproducersCount Conf1)
-        ;                   ]
-        ;              (.write w (format "%1.6f,%2d,%3d,%4d,%5d,%6d,%7d \n" EvolutionDelay1 NumberOfEvals1 NEmig1 Ec Rc NIslands1 BestSol))
-        ;              )
-        ;            )
-        ;          )
-        (ShedulingUtility/shutdown)
+      (if (empty? @(.instances self))
+        (do
+          (println "all ends")
+          ;        (with-open [w (writer (file "../results.csv"))]
+          ;          (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount,BestSol\n")
+          ;          (doseq [[EvolutionDelay1 NEmig1 Conf1 NIslands1 NumberOfEvals1 BestSol] nRes]
+          ;            (let [
+          ;                   Ec (:evaluatorsCount Conf1)
+          ;                   Rc (:reproducersCount Conf1)
+          ;                   ]
+          ;              (.write w (format "%1.6f,%2d,%3d,%4d,%5d,%6d,%7d \n" EvolutionDelay1 NumberOfEvals1 NEmig1 Ec Rc NIslands1 BestSol))
+          ;              )
+          ;            )
+          ;          )
+
+          ;        (ShedulingUtility/shutdown)          )
+          )
+        (do
+          (manager/mkExperiment self)
+          )
         )
       )
-
-    (swap! (.numberOfExperiments self) dec)
     self
     )
 
@@ -53,7 +58,7 @@
         (let [
                [exp name] (peek insts)
                ]
-          (println (format "Doing experiment: %1s" name))
+          (println (format "Doing experiment: %1s at %2d" name (.getTime (Date.))))
           (exp)
           (swap! (.instances self) #(identity %2) (pop insts))
           ;        (swap! (.numberOfExperiments self) dec)

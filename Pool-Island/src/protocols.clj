@@ -33,7 +33,7 @@
   (evalDone [self pid n])
   (poolManagerEnd [self pid])
   ;  (endEvol [self t])
-  (solutionReached [self pid])
+  (solutionReached [self pid sol])
   (numberOfEvaluationsReached [self pid])
   (bestSolution [self])
   )

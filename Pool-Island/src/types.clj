@@ -5,7 +5,8 @@
 (defrecord TIslandManager
   [pools ; set
    profiler manager
-   endEvol numberOfEvals])
+   endEvol numberOfEvals
+   solutions])
 
 (defrecord TPoolManager
   [table active migrantsDestination
@@ -36,25 +37,6 @@
              (clojure.string/join ["not all are int pairs: " (clojure.string/join ":" pairs)])))
     )
   )
-
-;(defn check-table [table extra1]
-;  (def extra (str extra1))
-;;  (println "check-table")
-;  (doseq [k (keys table)]
-;    (if (not (instance? java.lang.String k))
-;      (throw (RuntimeException. (clojure.string/join ["key:" k "is not String: \n" extra])))
-;      )
-;    )
-;  (doseq [v (vals table)]
-;    (if (not (instance? clojure.lang.PersistentVector v))
-;      (throw (RuntimeException. (clojure.string/join ["value:" v "is not PersistentVector: \n" extra])))
-;      (if (not= (count v) 2)
-;        (throw (RuntimeException. (clojure.string/join ["value:" v "is not of 2 elements: \n" extra])))
-;        )
-;      )
-;    )
-;  )
-
 
 (def error (atom true))
 

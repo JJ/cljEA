@@ -13,7 +13,6 @@
 
 (import 'java.util.Date)
 (require '[clojure.set])
-(require '[clojure.string :as str])
 
 (defn extractSubpopulation
   "returns: (seq [ind fitness])"
@@ -57,17 +56,12 @@
                     )
                   restOlds
                   )
-         ;         result (into table1 res)
-         ;         result (merge-with pea/merge-tables-function table1 res)
          ]
-    ;    (println (count result))
     (into result sub1)
-    ;    (into restOlds sub1)
     )
   )
 
 (defn selectPop2Reproduce [population n]
-  ;  (println "selectPop2Reproduce" population ":::" n)
   (let [
          tuple-3 (map #(nth population %)
                    (for [ind (range 3)] (rand-int (count population)))
@@ -122,8 +116,8 @@
          bit1 (problem/changeGen (first m2))
          result1 (concat m1 (conj m3 bit1))
          result2 (concat (nth cross2 0) (nth cross1 1))
-         res1 (str/join result1)
-         res2 (str/join result2)
+         res1 (problem/genMerger result1)
+         res2 (problem/genMerger result2)
          ]
 
     ;    (when (or
@@ -140,7 +134,6 @@
     ;
     [res1 res2]
     )
-  ;  (println "saliendo de crossover" ind1)
   )
 
 (defn flatt [parents2flatt]
@@ -151,12 +144,10 @@
 
   (if (< (count subpop) 3)
     (do
-      ;        (println "*********************************************************")
       (doWhenLittle)
       [nil nil]
       )
     (do
-      ;          (println "Reproducing" (count subpop))
       (let [
 
              pop2r (selectPop2Reproduce subpop parentsCount)
