@@ -1,7 +1,20 @@
+;;
+;; Author José Albert Cruz Almaguer <jalbertcruz@gmail.com>
+;; Copyright 2013 by José Albert Cruz Almaguer.
+;;
+;; This program is licensed to you under the terms of version 3 of the
+;; GNU Affero General Public License. This program is distributed WITHOUT
+;; ANY EXPRESS OR IMPLIED WARRANTY, INCLUDING THOSE OF NON-INFRINGEMENT,
+;; MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. Please refer to the
+;; AGPL (http://www.gnu.org/licenses/agpl-3.0.txt) for more details.
+;;
+
 (ns problem)
 
 (declare terminationCondition fitnessTerminationCondition
-  changeGen function genInd genMerger popSize chromosomeSize)
+  changeGen function genInd popSize chromosomeSize)
+
+(def genMerger identity)
 
 (defn genInitPop [PopSize ChromosomeSize]
   (for [_ (range PopSize)] (genInd ChromosomeSize))
@@ -92,6 +105,10 @@
 (def popSize 1024)
 (def chromosomeSize (.varsCount instance))
 
+(defn fitnessTerminationCondition [ind fit]
+  (> fit 395)
+  )
+
 (defn MaxSAT-evaluate [self solution]
   (count (filter
            (fn [clause]
@@ -117,24 +134,21 @@
   (not b)
   )
 
-(def genMerger identity)
-
-
 (ns problem)
 
 (def problemName :maxSAT )
 ;(def problemName :maxOne )
+
 (def terminationCondition :cantEvalsTerminationCondition )
-;(def terminationCondition :fitnessTerminationCondition )
+(def terminationCondition :fitnessTerminationCondition )
 
 (case problemName
 
   :maxSAT (do
-            ;(def fitnessTerminationCondition maxSAT/fitnessTerminationCondition)
+            (def fitnessTerminationCondition maxSAT/fitnessTerminationCondition)
             (def changeGen maxSAT/changeGen)
             (def function maxSAT/function)
             (def genInd maxSAT/genInd)
-            (def genMerger maxSAT/genMerger)
             (def popSize maxSAT/popSize)
             (def chromosomeSize maxSAT/chromosomeSize)
             )

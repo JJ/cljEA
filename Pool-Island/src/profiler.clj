@@ -56,7 +56,8 @@
 
   (endEvol [self evolData]
     (let [
-           evolutionDelay (/ (- (:time evolData) @(.initEvol self)) 1000.0)
+           ;           evolutionDelay (/ (- (:time evolData) @(.initEvol self)) 1000.0)
+           evolutionDelay (- (:time evolData) @(.initEvol self))
            ]
       (send @(.manager self) manager/experimentEnd
         [evolutionDelay (count @(.emigrations self))

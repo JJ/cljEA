@@ -13,19 +13,7 @@
 ;(System/setOut fileStream)
 ;(System/setErr fileStream)
 
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/util.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/protocols.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/types.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/factories.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/problems.clj")
-
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/evaluator.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/islandManager.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/poolManager.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/profiler.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/manager.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/reproducer.clj")
-(load-file "F:/Mis Documentos/PhD/src/cljEA/Pool-Island/src/experiment.clj")
+(load-file "./src/loaderFile.clj")
 
 (defn init []
   (ShedulingUtility/start)
@@ -41,7 +29,7 @@
     (send eProfiler profiler/init eManager)
 
     (send eManager manager/session ; RUN!
-      (vec (for [_ (range 3)] [#(r2 eProfiler eManager) "r2"]))
+      (vec (for [_ (range 10)] [#(r2 eProfiler eManager) "r2"]))
 
       ;      [
       ;        [#(r1 eProfiler eManager) "r1"]

@@ -68,10 +68,10 @@
 
 (defn r2 [pprofiler pmanager]
   (let [
-         evaluatorsCount 10
-         evaluatorsCapacity 50 ; 20
-         reproducersCount 4 ;10
-         reproducersCapacity 50 ; 20
+         evaluatorsCount 2
+         evaluatorsCapacity 25 ; 20
+         reproducersCount 1 ;10
+         reproducersCapacity 25 ; 20
          evaluations 3000
 
          conf {
