@@ -22,7 +22,7 @@
 (ns evaluator)
 
 (defprotocol Evaluator
-  (evaluate [self N])
+  (evaluate [self n])
   )
 
 (ns islandManager)

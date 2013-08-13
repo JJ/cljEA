@@ -11,49 +11,69 @@
 
 (ns pea)
 
+(defn evaluate [& {:keys [table n doIfFitnessTerminationCondition]}]
+  (let [
+         sels (take n
+                (for [[ind [_ state]] table
+                      :when (= state 1)]
+                  ind
+                  )
+                )
+
+         ]
+    (if (empty? sels)
+      (do
+        [false nil]
+        )
+      (do
+        (let [
+               nSels
+               (map
+                 (fn [ind]
+                   (let [
+                          fit (problem/function ind)
+                          ]
+
+                     (when (= problem/terminationCondition :fitnessTerminationCondition )
+                       (when (problem/fitnessTerminationCondition ind fit)
+                         (doIfFitnessTerminationCondition ind fit)
+                         )
+                       )
+
+                     [ind [fit 2]]
+                     )
+                   )
+                 sels
+                 )
+               ]
+          [true nSels]
+          )
+        )
+      )
+    )
+  )
+
 (extend-type TEvaluator
   evaluator/Evaluator
 
   (evaluate [self n]
     (let [
-           sels (take n
-                  (for [[ind [_ state]] @(.table @(.manager self))
-                        :when (= state 1)]
-                    ind
-                    )
-                  )
-           _ (if (empty? sels)
-               (do
-                 (send (.manager self) poolManager/evalEmpthyPool *agent*)
-                 )
-               (do
-                 (let [
-                        nSels
-                        (map
-                          (fn [ind]
-                            (let [
-                                   fit (problem/function ind)
-                                   ]
-
-                              (when (= problem/terminationCondition :fitnessTerminationCondition )
-                                (when (problem/fitnessTerminationCondition ind fit)
-                                  (send (.manager self) poolManager/solutionReachedbyEvaluator [ind fit] *agent*)
-                                  )
-                                )
-
-                              [ind [fit 2]]
-                              )
-                            )
-                          sels
-                          )
-                        ]
-                   (send (.manager self) poolManager/add2Pool-Ind-Fit-State nSels)
-                   (send (.manager self) poolManager/evalDone *agent* (count sels))
-                   )
-                 )
-               )
+           [res nSels] (pea/evaluate
+                         :table @(.table @(.manager self))
+                         :n n
+                         :doIfFitnessTerminationCondition #(send (.manager self) poolManager/solutionReachedbyEvaluator [%1 %2] *agent*)
+                         )
            ]
+
+      (if res
+        (do
+          (send (.manager self) poolManager/add2Pool-Ind-Fit-State nSels)
+          (send (.manager self) poolManager/evalDone *agent* (count nSels))
+          )
+        (send (.manager self) poolManager/evalEmpthyPool *agent*)
+        )
       )
+
     self
     )
 

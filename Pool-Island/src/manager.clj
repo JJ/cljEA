@@ -19,7 +19,7 @@
 
   ;  (experimentEnd [self EvolutionDelay NEmig Conf NIslands NumberOfEvals bestInd]
   (experimentEnd [self reportData]
-    ;    (println (format "Best fitness: %1d at %2d" (reportData 5) (.getTime (Date.))))
+    (println (format "Best fitness: %1d at %2d" (nth reportData 5) (.getTime (Date.))))
 
     (let [
            nRes (swap! (.results self) #(conj %1 %2) reportData)
@@ -28,18 +28,18 @@
       (if (empty? @(.instances self))
         (do
           (println "all ends")
-          (with-open [w (writer (file "../../results/book2013/cljEA/poolResults.csv"))]
-            (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount,BestSol\n")
-            (doseq [[EvolutionDelay1 NEmig1 Conf1 NIslands1 NumberOfEvals1 BestSol] nRes]
-              (let [
-                     Ec (:evaluatorsCount Conf1)
-                     Rc (:reproducersCount Conf1)
-                     ]
-                ;                        (.write w (format "%1.6f,%2d,%3d,%4d,%5d,%6d,%7d \n" EvolutionDelay1 NumberOfEvals1 NEmig1 Ec Rc NIslands1 BestSol))
-                (.write w (format "%1d,%2d,%3d,%4d,%5d,%6d,%7d \n" EvolutionDelay1 NumberOfEvals1 NEmig1 Ec Rc NIslands1 BestSol))
-                )
-              )
-            )
+;          (with-open [w (writer (file "../../results/book2013/cljEA/parResults.csv"))]
+;            (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount,BestSol\n")
+;            (doseq [[EvolutionDelay1 NEmig1 Conf1 NIslands1 NumberOfEvals1 BestSol] nRes]
+;              (let [
+;                     Ec (:evaluatorsCount Conf1)
+;                     Rc (:reproducersCount Conf1)
+;                     ]
+;                ;                        (.write w (format "%1.6f,%2d,%3d,%4d,%5d,%6d,%7d \n" EvolutionDelay1 NumberOfEvals1 NEmig1 Ec Rc NIslands1 BestSol))
+;                (.write w (format "%1d,%2d,%3d,%4d,%5d,%6d,%7d \n" EvolutionDelay1 NumberOfEvals1 NEmig1 Ec Rc NIslands1 BestSol))
+;                )
+;              )
+;            )
 
           ;        (ShedulingUtility/shutdown)          )
           )

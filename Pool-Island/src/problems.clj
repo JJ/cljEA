@@ -20,6 +20,12 @@
   (for [_ (range PopSize)] (genInd ChromosomeSize))
   )
 
+(def evaluatorsCount 4)
+(def evaluatorsCapacity 50) ; 20
+(def reproducersCount 1) ;10
+(def reproducersCapacity 50) ; 20
+(def evaluations 25)
+
 (ns maxOnes)
 
 (require '[clojure.string :as str])

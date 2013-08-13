@@ -13,17 +13,11 @@
 
 (defn r1 [pprofiler pmanager]
   (let [
-         evaluatorsCount 1
-         evaluatorsCapacity 50 ; 20
-         reproducersCount 1 ;10
-         reproducersCapacity 50 ; 20
-         evaluations 25
-
          conf {
-                :evaluatorsCount evaluatorsCount
-                :evaluatorsCapacity evaluatorsCapacity
-                :reproducersCount reproducersCount
-                :reproducersCapacity reproducersCapacity
+                :evaluatorsCount problem/evaluatorsCount
+                :evaluatorsCapacity problem/evaluatorsCapacity
+                :reproducersCount problem/reproducersCount
+                :reproducersCapacity problem/reproducersCapacity
                 }
 
          mIslandManager (agent (islandManager/create pprofiler pmanager) ;                              :error-mode :continue
@@ -47,8 +41,8 @@
     (let [
            pools #{p1}
            poolsCount (count pools)
-           cociente (quot evaluations poolsCount)
-           resto (rem evaluations poolsCount)
+           cociente (quot problem/evaluations poolsCount)
+           resto (rem problem/evaluations poolsCount)
            [primeros ultimos] (split-at resto pools)
            ]
 

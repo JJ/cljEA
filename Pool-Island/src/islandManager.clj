@@ -58,7 +58,7 @@
           {
             :time (.getTime (Date.))
             :numberOfEvals @(.numberOfEvals self)
-            :bestSolution (sol 1)
+            :bestSolution (nth sol 1)
             }
           )
         (swap! (.endEvol self) #(identity %2) true)
