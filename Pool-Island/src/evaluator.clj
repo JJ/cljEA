@@ -19,7 +19,6 @@
                   ind
                   )
                 )
-
          ]
     (if (empty? sels)
       (do
@@ -67,7 +66,7 @@
 
       (if res
         (do
-          (send (.manager self) poolManager/add2Pool-Ind-Fit-State nSels)
+          (send (.manager self) poolManager/add2Pool nSels)
           (send (.manager self) poolManager/evalDone *agent* (count nSels))
           )
         (send (.manager self) poolManager/evalEmpthyPool *agent*)

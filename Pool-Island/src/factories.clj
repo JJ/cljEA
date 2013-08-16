@@ -35,7 +35,7 @@
                )
          ]
 
-    (add-watch pp :log log)
+;    (add-watch pp :log log)
 
     (pea.TPoolManager. pp
       (atom true) (atom 0) pprofiler

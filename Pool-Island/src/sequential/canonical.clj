@@ -62,17 +62,19 @@
 ;(:require pea)
 
 (def bestSolution (atom -1))
-(def evaluations (atom 5000))
+(def evaluations (atom problem/evaluations))
 
 (defn testsRunSeqEA []
   (let [
          initEvol (.getTime (Date.))
          ]
+    (swap! evaluations #(identity %2) problem/evaluations)
     (runSeqEA
       :genInitPop problem/genInitPop
 
       :evaluatePopulation (fn [[alreadyEval nInds]]
                             (let [
+
                                    sInds (case problem/terminationCondition
                                            :fitnessTerminationCondition nInds
                                            ; else
@@ -83,6 +85,7 @@
                                              resX
                                              )
                                            )
+
                                    toEvalEvaluated (for [i sInds]
                                                      (let [
                                                             fit (problem/function i)
@@ -97,6 +100,7 @@
                                                        [i fit]
                                                        )
                                                      )
+
                                    ]
                               (into alreadyEval toEvalEvaluated)
                               )
@@ -158,9 +162,22 @@
     )
   )
 
-(def nRes (for [_ (range 100)]
+;(try
+;
+;
+;  (catch Exception a
+;    (clojure.repl/pst a)
+;    )
+;  )
+
+(def nRes (for [_ (range 20)]
             (testsRunSeqEA)
-            ))
+            )
+  )
+
+;(doseq [n nRes]
+;  (println n)
+;  )
 
 (with-open [w (writer (file "../../results/book2013/cljEA/seqCanonicalResults.csv"))]
   (.write w "EvolutionDelay\n")

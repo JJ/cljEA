@@ -62,17 +62,13 @@
 
 (defn r2 [pprofiler pmanager]
   (let [
-         evaluatorsCount 2
-         evaluatorsCapacity 25 ; 20
-         reproducersCount 1 ;10
-         reproducersCapacity 25 ; 20
-         evaluations 3000
+         evaluations problem/evaluations
 
          conf {
-                :evaluatorsCount evaluatorsCount
-                :evaluatorsCapacity evaluatorsCapacity
-                :reproducersCount reproducersCount
-                :reproducersCapacity reproducersCapacity
+                :evaluatorsCount problem/evaluatorsCount
+                :evaluatorsCapacity problem/evaluatorsCapacity
+                :reproducersCount problem/reproducersCount
+                :reproducersCapacity problem/reproducersCapacity
                 }
 
          mIslandManager (agent (islandManager/create pprofiler pmanager) ;                              :error-mode :continue

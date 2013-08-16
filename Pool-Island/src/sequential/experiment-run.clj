@@ -35,6 +35,7 @@
     :fitnessTerminationCondition @solutionFound
     ; else
     (do
+      ;      (println @evaluations)
       (= @evaluations 0)
       )
     )
@@ -45,6 +46,9 @@
                            ]}
                 ]
 
+  (swap! evaluations #(identity %2) problem/evaluations)
+  (swap! solutionFound #(identity %2) false)
+
   (loop [
           pool (ref initPool)
           evalDone 0
@@ -54,9 +58,10 @@
            evaluatorsCapacity (case problem/terminationCondition
                                 :fitnessTerminationCondition problem/evaluatorsCapacity
                                 ; else
-                                (mod
+                                (do
                                   (swap! evaluations #(- %1 %2) evalDone)
-                                  problem/evaluatorsCapacity)
+                                  (min @evaluations problem/evaluatorsCapacity)
+                                  )
                                 )
            newEvalDone (atom 0)
            _ (when (> evaluatorsCapacity 0)
@@ -74,8 +79,6 @@
                      (alter pool #(into %1 %2) nSels)
                      )
                    (swap! newEvalDone #(identity %2) (count nSels))
-
-
                    )
 
                  )
@@ -97,8 +100,6 @@
              :parentsCount (quot (count subpop) 2)
              )
 
-
-
            ]
 
       (when res
@@ -109,7 +110,6 @@
                                        nInds bestParents (count @pool)
                                        ))
           )
-
 
         )
 
@@ -133,19 +133,25 @@
 ;  )
 
 (defn testsRunSeqEA []
-  (let[
-        initEvol (.getTime (Date.))
-        res (runSeqEA
-          :initPool (into {} (for [ind (problem/genInitPop problem/popSize problem/chromosomeSize)] [ind [-1 1]]))
-          )
-        ]
+  (let [
+         initEvol (.getTime (Date.))
+         res (runSeqEA
+               :initPool (into {} (for [ind (problem/genInitPop problem/popSize problem/chromosomeSize)] [ind [-1 1]]))
+               )
+         ]
+    ;    (println res)
     (- (.getTime (Date.)) initEvol)
     )
   )
 
-(def nRes (for [_ (range 100)]
+(def nRes (for [_ (range 20)]
             (testsRunSeqEA)
-            ))
+            )
+  )
+
+;(doseq [n nRes]
+;  (println n)
+;  )
 
 (with-open [w (writer (file "../../results/book2013/cljEA/seqResults.csv"))]
   (.write w "EvolutionDelay\n")

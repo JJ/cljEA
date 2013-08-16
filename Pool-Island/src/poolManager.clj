@@ -71,7 +71,7 @@
     )
 
 
-  (add2Pool-Ind-Fit-State [self individuos]
+  (add2Pool [self individuos]
     (dosync
       ;        (alter (.table self) #(identity %2)
       ; (adjustPool @(.table self) ndata @(.poolSize self)))
@@ -88,7 +88,7 @@
     )
 
   (migration [self ParIndividuoFitness]
-    (poolManager/add2Pool-Ind-Fit-State self [[(nth ParIndividuoFitness 0) [(nth ParIndividuoFitness 1) 2]]])
+    (poolManager/add2Pool self [[(nth ParIndividuoFitness 0) [(nth ParIndividuoFitness 1) 2]]])
     self
     )
 
@@ -134,9 +134,10 @@
                evaluatorsCapacity (case problem/terminationCondition
                                     :fitnessTerminationCondition (:evaluatorsCapacity @(.pmConf self))
                                     ; else
-                                    (mod
+                                    (do
                                       (swap! (.evaluations self) #(- %1 %2) n)
-                                      (:evaluatorsCapacity @(.pmConf self)))
+                                      (min @(.evaluations self) (:evaluatorsCapacity @(.pmConf self)))
+                                      )
                                     )
                ]
           (if (> evaluatorsCapacity 0)

@@ -44,7 +44,7 @@
   (init [self conf])
   (initEvaluations [self cant])
   (updatePool [self newPool])
-  (add2Pool-Ind-Fit-State [self individuos])
+  (add2Pool [self individuos])
   (migrantsDestination [self Dests])
   (migration [self ParIndividuoFitness])
   ;  (setPoolsManager [self Manager])
@@ -65,7 +65,7 @@
 (ns manager)
 
 (defprotocol Manager
-;  (experimentEnd [self EvolutionDelay NEmig Conf NIslands NumberOfEvals])
+  ;  (experimentEnd [self EvolutionDelay NEmig Conf NIslands NumberOfEvals])
   (experimentEnd [self reportData])
   (mkExperiment [self])
   (session [self Funs])

@@ -17,6 +17,9 @@
   islandManager/IslandManager
 
   (start [self]
+
+    (send (.profiler self) profiler/initEvol (.getTime (Date.)))
+
     (doseq [p @(.pools self)]
       ;        (send p poolManager/setPoolsManager *agent*)
       (send p poolManager/sReps)
@@ -27,7 +30,6 @@
 
   (init [self ppools]
     (swap! (.pools self) #(identity %2) ppools)
-    (send (.profiler self) profiler/initEvol (.getTime (Date.)))
 
     (swap! (.endEvol self) #(identity %2) false)
     (swap! (.numberOfEvals self) #(identity %2) 0)

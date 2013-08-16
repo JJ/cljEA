@@ -20,11 +20,11 @@
   (for [_ (range PopSize)] (genInd ChromosomeSize))
   )
 
-(def evaluatorsCount 4)
+(def evaluatorsCount 25)
 (def evaluatorsCapacity 50) ; 20
-(def reproducersCount 1) ;10
+(def reproducersCount 10) ;10
 (def reproducersCapacity 50) ; 20
-(def evaluations 25)
+(def evaluations 5000)
 
 (ns maxOnes)
 
@@ -112,7 +112,17 @@
 (def chromosomeSize (.varsCount instance))
 
 (defn fitnessTerminationCondition [ind fit]
-  (> fit 395)
+  (let [
+         res (> fit 395)
+         ]
+
+;    (when res
+;      (println "Encontre:" fit)
+;      )
+
+    res
+    )
+
   )
 
 (defn MaxSAT-evaluate [self solution]
@@ -146,7 +156,7 @@
 ;(def problemName :maxOne )
 
 (def terminationCondition :cantEvalsTerminationCondition )
-(def terminationCondition :fitnessTerminationCondition )
+;(def terminationCondition :fitnessTerminationCondition )
 
 (case problemName
 
