@@ -67,24 +67,30 @@
            _ (when (> evaluatorsCapacity 0)
                (let [
                       [resEval nSels] (pea/evaluate
-                                        :table @pool
-                                        :n evaluatorsCapacity
+                                        :sels (take evaluatorsCapacity
+                                                (for [[ind [_ state]] @pool
+                                                      :when (= state 1)]
+                                                  ind
+                                                  )
+                                                )
                                         :doIfFitnessTerminationCondition (fn [ind fit]
                                                                            (swap! solutionFound #(identity %2) true)
                                                                            )
                                         )
                       ]
                  (when resEval
-                   (dosync
-                     (alter pool #(into %1 %2) nSels)
-                     )
-                   (swap! newEvalDone #(identity %2) (count nSels))
-                   )
+                   (let [
+                          pnSels (for [[i f] nSels] [i [f 2]])
+                          ]
 
+                     (dosync
+                       (alter pool #(into %1 %2) pnSels)
+                       )
+                     (swap! newEvalDone #(identity %2) (count pnSels))
+                     )
+                   )
                  )
                )
-
-
 
            subpop (pea/extractSubpopulation
                     (for [[ind [fitness state]] @pool
@@ -94,11 +100,10 @@
                     problem/reproducersCapacity
                     )
 
-           [res [noParents nInds bestParents]]
-           (pea/evolve
-             :subpop subpop
-             :parentsCount (quot (count subpop) 2)
-             )
+           [res [noParents nInds bestParents]] (pea/evolve
+                                                 :subpop subpop
+                                                 :parentsCount (quot (count subpop) 2)
+                                                 )
 
            ]
 
@@ -140,7 +145,7 @@
                )
          ]
     ;    (println res)
-    (- (.getTime (Date.)) initEvol)
+    [(- (.getTime (Date.)) initEvol) res]
     )
   )
 
@@ -154,8 +159,10 @@
 ;  )
 
 (with-open [w (writer (file "../../results/book2013/cljEA/seqResults.csv"))]
-  (.write w "EvolutionDelay\n")
-  (doseq [evolutionDelay nRes]
-    (.write w (format "%1d\n" evolutionDelay))
+  (.write w "EvolutionDelay,BestSol\n")
+  (doseq [[evolutionDelay bestSol] nRes]
+    (.write w (format "%1d,%1d\n" evolutionDelay bestSol))
     )
   )
+
+(println "Ends!")

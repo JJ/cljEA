@@ -2,6 +2,8 @@
 
 (defrecord TEvaluator [manager profiler])
 
+(defrecord TReproducer [manager profiler])
+
 (defrecord TIslandManager
   [pools ; set
    profiler manager
@@ -17,9 +19,9 @@
   [conf manager initEvol nIslands iterations emigrations])
 
 (defrecord TManager
-  [results numberOfExperiments profiler instances])
+  [results profiler instances])
 
-(defrecord TReproducer [manager profiler])
+
 
 (defn checkListPairs [pairs]
   (if (not (every? #(= (count %) 2) pairs))
@@ -121,21 +123,6 @@
   )
 
 (defn cmp1 [e1 e2]
-  ;          (if
-  ;            (not (instance? clojure.lang.IFn a))
-  ;            (throw (RuntimeException. (clojure.string/join ["value:" a "is not callable"])))
-  ;            )
-  ;          (if
-  ;            (not (instance? clojure.lang.IFn b))
-  ;            (throw (RuntimeException. (clojure.string/join ["value:" b "is not callable"])))
-  ;            )
-  ;          (if (or (not= (count a) 2) (not= (count b) 2))
-  ;            (do
-  ;              (throw (RuntimeException.
-  ;                       (clojure.string/join
-  ;                         ["errors in: " (clojure.string/join ":" Sels)])))
-  ;              )
-  ;            )
   ;  (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":::" [e1 e2])))
   (if (< (e1 1) (e2 1)) e2 e1)
   )

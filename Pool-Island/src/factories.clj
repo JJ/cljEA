@@ -75,6 +75,6 @@
 
 (defn create [eProfiler]
   ;  (defrecord TReport
-  ;    [results numberOfExperiments profiler instances])
-  (pea.TManager. (atom []) (atom 0) eProfiler (atom []))
+  ;    [results profiler instances])
+  (pea.TManager. (atom []) eProfiler (atom []))
   )

@@ -29,7 +29,7 @@
     (send eProfiler profiler/init eManager)
 
     (send eManager manager/session ; RUN!
-      (vec (for [_ (range 20)] [#(r2 eProfiler eManager) "r"]))
+      (vec (for [_ (range 20)] [#(r2 eProfiler eManager) "r2"]))
 
       ;      [
       ;        [#(r1 eProfiler eManager) "r1"]

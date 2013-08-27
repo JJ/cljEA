@@ -53,19 +53,17 @@
     )
 
   (solutionReached [self _ sol]
-    ;    (println "solutionReachedByPoolManager")
-    (if-not @(.endEvol self)
-      (do
-        (send (.profiler self) profiler/endEvol
-          {
-            :time (.getTime (Date.))
-            :numberOfEvals @(.numberOfEvals self)
-            :bestSolution (nth sol 1)
-            }
-          )
-        (swap! (.endEvol self) #(identity %2) true)
+    (when-not @(.endEvol self)
+      (send (.profiler self) profiler/endEvol
+        {
+          :time (.getTime (Date.))
+          :numberOfEvals @(.numberOfEvals self)
+          :bestSolution (nth sol 1)
+          }
         )
+      (swap! (.endEvol self) #(identity %2) true)
       )
+
     (doseq [p @(.pools self)]
       (send p poolManager/deactivate!)
       (finalize/finalize self)
@@ -77,8 +75,8 @@
     (swap! (.solutions self) #(conj %1 %2) (poolManager/bestSolution @pid))
     ; Si no he acabado y pid es el ultimo pool:
     (when (and
-            (not @(.endEvol self))
             (empty? (swap! (.pools self) #(disj %1 %2) pid))
+;            (not @(.endEvol self)) ; OJO!!!
             )
       (send (.profiler self) profiler/endEvol
         {
@@ -90,22 +88,6 @@
       (swap! (.endEvol self) #(identity %2) true)
       )
 
-    ;    (if-not @(.endEvol self)
-    ;           (do
-    ;             (send (.profiler self) profiler/endEvol
-    ;               {
-    ;                 :time (.getTime (Date.))
-    ;                 :numberOfEvals @(.numberOfEvals self)
-    ;                 :bestSolution ((islandManager/bestSolution self) 1)
-    ;                 }
-    ;               )
-    ;             (swap! (.endEvol self) #(identity %2) true)
-    ;             )
-    ;           )
-    ;    (doseq [p @(.pools self)]
-    ;      (send p poolManager/deactivate!)
-    ;      (finalize/finalize self)
-    ;      )
     self
     )
 

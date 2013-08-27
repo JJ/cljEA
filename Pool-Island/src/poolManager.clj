@@ -66,10 +66,8 @@
       (alter (.table self) #(identity %2)
         newPool)
       )
-
     self
     )
-
 
   (add2Pool [self individuos]
     (dosync
@@ -78,7 +76,6 @@
       (alter (.table self) #(identity %2)
         (into @(.table self) individuos))
       )
-
     self
     )
 
@@ -94,10 +91,10 @@
 
   (evaluatorFinalized [self pid]
     (when (and
-            (empty? @(.reps self))
             (empty? (swap! (.evals self) #(disj %1 %2) pid))
+            (empty? @(.reps self))
             )
-      (send pid finalize/finalize)
+      (finalize/finalize self)
       )
     self
     )
@@ -107,7 +104,7 @@
             (empty? (swap! (.reps self) #(disj %1 %2) pid))
             (empty? @(.evals self))
             )
-      (send pid finalize/finalize)
+      (finalize/finalize self)
       )
     self
     )
@@ -135,8 +132,9 @@
                                     :fitnessTerminationCondition (:evaluatorsCapacity @(.pmConf self))
                                     ; else
                                     (do
-                                      (swap! (.evaluations self) #(- %1 %2) n)
-                                      (min @(.evaluations self) (:evaluatorsCapacity @(.pmConf self)))
+                                      (min
+                                        (swap! (.evaluations self) #(- %1 %2) n)
+                                        (:evaluatorsCapacity @(.pmConf self)))
                                       )
                                     )
                ]
@@ -157,7 +155,7 @@
 
   (sReps [self]
     (doseq [e @(.reps self)]
-      (send e reproducer/evolve (:reproducersCapacity @(.pmConf self)))
+      (send e reproducer/evolve 0)
       )
     self
     )
@@ -179,6 +177,7 @@
     (when @(.active self)
       ;      (send (.manager self) islandManager/endEvol (.getTime (Date.)))
       (send (.manager self) islandManager/solutionReached *agent* [ind fit])
+      (send (.manager self) islandManager/poolManagerEnd *agent*)
       (swap! (.active self) #(identity %2) false)
       )
     self
@@ -188,6 +187,7 @@
     (when @(.active self)
       ;      (send (.manager self) islandManager/endEvol (.getTime (Date.)))
       (send (.manager self) islandManager/numberOfEvaluationsReached *agent*)
+      (finalize/finalize self)
       (swap! (.active self) #(identity %2) false)
       )
     self

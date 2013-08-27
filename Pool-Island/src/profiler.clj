@@ -14,8 +14,8 @@
 (extend-type TProfiler
   profiler/Profiler
 
-  (init [self rprt]
-    (swap! (.manager self) #(identity %2) rprt)
+  (init [self pManager]
+    (swap! (.manager self) #(identity %2) pManager)
     self
     )
 
@@ -38,18 +38,19 @@
     )
 
   (iteration [self population]
-    (let [
-           popEval (map #(problem/function %) population)
-           ]
 
-      (swap! (.iterations self)
-        #(conj %1 %2)
-        [(reduce #(if (> %1 %2) %2 %1) popEval)
-         (reduce #(if (< %1 %2) %2 %1) popEval)
-         (/ (reduce + popEval) (* 1.0 (count population))) ; promedio
-         ]
-        )
-      )
+;    (let [
+;           popEval (map #(problem/function %) population)
+;           ]
+;
+;      (swap! (.iterations self)
+;        #(conj %1 %2)
+;        [(reduce #(if (> %1 %2) %2 %1) popEval)
+;         (reduce #(if (< %1 %2) %2 %1) popEval)
+;         (/ (reduce + popEval) (* 1.0 (count population))) ; promedio
+;         ]
+;        )
+;      )
 
     self
     )

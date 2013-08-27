@@ -37,17 +37,17 @@
          l3 (concat l1 l2)
          sub1 (into {} l3)
          table1 (apply dissoc table (keys sub1)) ; Remove the subpopulation already selected
-         cant2Drop (- (count table1) (- poolSize (count sub1)))
-         restOlds (apply dissoc table1 (take cant2Drop
+         cant2drop (- (count table1) (- poolSize (count sub1)))
+         restOlds (apply dissoc table1 (take cant2drop
                                          (for [[ind [_ state]] table1
                                                :when (= state 2)]
                                            ind
                                            )
                                          )
                     )
-         more2Drop (- (+ (count sub1) (count restOlds)) poolSize)
-         result (if (> more2Drop 0)
-                  (apply dissoc restOlds (take more2Drop
+         more2drop (- (+ (count sub1) (count restOlds)) poolSize)
+         result (if (> more2drop 0)
+                  (apply dissoc restOlds (take more2drop
                                            (for [[ind [_ state]] restOlds
                                                  :when (= state 1)]
                                              ind
@@ -61,17 +61,17 @@
     )
   )
 
-(defn selectPop2Reproduce [population n]
+(defn selectPop2Reproduce [subpop parentsCount]
   (let [
-         tuple-3 (map #(nth population %)
-                   (for [ind (range 3)] (rand-int (count population)))
-                   )
+         tuple3 (map #(nth subpop %)
+                  (for [ind (range 3)] (rand-int (count subpop)))
+                  )
          select1from3 (fn []
-                        (reduce #(if (< (%1 1) (%2 1)) %2 %1) tuple-3) ; (OJO: Refactorizar)
+                        (reduce #(if (< (%1 1) (%2 1)) %2 %1) tuple3) ; (OJO: Refactorizar)
                         )
          ]
 
-    (for [_ (range (* 2 n))] (select1from3))
+    (for [_ (range (* 2 parentsCount))] (select1from3))
     )
 
   )
@@ -105,34 +105,20 @@
   (let [
          indLength (count ind1)
          crossPoint (rand-int indLength)
-         cross1 (split-at crossPoint ind1)
-         cross2 (split-at crossPoint ind2)
-         child1 (concat (nth cross1 0) (nth cross2 1))
+         [a1 a2] (split-at crossPoint ind1)
+         [b1 b2] (split-at crossPoint ind2)
+
+         child1 (concat a1 b2)
          muttationPoint (rand-int indLength)
-         mChild (split-at (dec muttationPoint) child1)
-         m1 (nth mChild 0)
-         m2 (nth mChild 1)
+
+         [m1 m2] (split-at (dec muttationPoint) child1)
+
          m3 (rest m2)
          bit1 (problem/changeGen (first m2))
-         result1 (concat m1 (conj m3 bit1))
-         result2 (concat (nth cross2 0) (nth cross1 1))
-         res1 (problem/genMerger result1)
-         res2 (problem/genMerger result2)
+         result1 (concat m1 (concat (list bit1) m3))
+         result2 (concat b1 a2)
          ]
-
-    ;    (when (or
-    ;          (> f1 125)
-    ;          (> f2 125)
-    ;          )
-    ;      (when (= 128 (problem/function res1))
-    ;        (println res1)
-    ;        )
-    ;      (when (= 128 (problem/function res2))
-    ;        (println res2)
-    ;        )
-    ;      )
-    ;
-    [res1 res2]
+    [(problem/genMerger result1) (problem/genMerger result2)]
     )
   )
 
@@ -149,14 +135,14 @@
       )
     (do
       (let [
-
              pop2r (selectPop2Reproduce subpop parentsCount)
              parents2use (parentsSelector pop2r parentsCount)
              nIndsByPair (map crossover parents2use)
-             nInds (concat (for [[I _] nIndsByPair] I) (for [[_ I] nIndsByPair] I))
+             nInds (concat (for [[i _] nIndsByPair] i) (for [[_ i] nIndsByPair] i))
              noParents (clojure.set/difference (set subpop) (set (flatt parents2use)))
              bestParents [(bestParent pop2r)]
              ]
+
         [:ok [noParents nInds bestParents]]
         )
       )

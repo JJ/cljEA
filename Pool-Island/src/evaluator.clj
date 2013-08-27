@@ -11,45 +11,38 @@
 
 (ns pea)
 
-(defn evaluate [& {:keys [table n doIfFitnessTerminationCondition]}]
-  (let [
-         sels (take n
-                (for [[ind [_ state]] table
-                      :when (= state 1)]
-                  ind
-                  )
-                )
-         ]
-    (if (empty? sels)
-      (do
-        [false nil]
-        )
-      (do
-        (let [
-               nSels
-               (map
-                 (fn [ind]
-                   (let [
-                          fit (problem/function ind)
-                          ]
+(defn evaluate [& {:keys [sels doIfFitnessTerminationCondition]}]
+  (if (empty? sels)
+    (do
+      [false nil]
+      )
+    (do
+      (let [
+             nSels
+             (map
+               (fn [ind]
+                 (let [
+                        fit (problem/function ind)
+                        ]
 
-                     (when (= problem/terminationCondition :fitnessTerminationCondition )
-                       (when (problem/fitnessTerminationCondition ind fit)
-                         (doIfFitnessTerminationCondition ind fit)
-                         )
+                   (when (= problem/terminationCondition :fitnessTerminationCondition )
+                     (when (problem/fitnessTerminationCondition ind fit)
+                       (doIfFitnessTerminationCondition ind fit)
                        )
-
-                     [ind [fit 2]]
                      )
+
+                   [ind fit]
                    )
-                 sels
                  )
-               ]
-          [true nSels]
-          )
+               sels
+               )
+             ]
+
+        [true nSels]
         )
       )
     )
+
   )
 
 (extend-type TEvaluator
@@ -58,16 +51,23 @@
   (evaluate [self n]
     (let [
            [res nSels] (pea/evaluate
-                         :table @(.table @(.manager self))
-                         :n n
+                         :sels (take n
+                                 (for [[ind [_ state]] @(.table @(.manager self))
+                                       :when (= state 1)]
+                                   ind
+                                   )
+                                 )
                          :doIfFitnessTerminationCondition #(send (.manager self) poolManager/solutionReachedbyEvaluator [%1 %2] *agent*)
                          )
            ]
 
       (if res
-        (do
-          (send (.manager self) poolManager/add2Pool nSels)
-          (send (.manager self) poolManager/evalDone *agent* (count nSels))
+        (let [
+               pnSels (for [[i f] nSels] [i [f 2]])
+               ]
+
+          (send (.manager self) poolManager/add2Pool pnSels)
+          (send (.manager self) poolManager/evalDone *agent* (count pnSels))
           )
         (send (.manager self) poolManager/evalEmpthyPool *agent*)
         )

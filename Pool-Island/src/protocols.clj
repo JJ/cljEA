@@ -81,7 +81,7 @@
 (ns profiler)
 
 (defprotocol Profiler
-  (init [self rprt])
+  (init [self pManager])
   (configuration [self nConf nNIslands])
   (migration [self [_ _] t])
   (initEvol [self t])

@@ -24,6 +24,7 @@
 (def evaluatorsCapacity 50) ; 20
 (def reproducersCount 10) ;10
 (def reproducersCapacity 50) ; 20
+
 (def evaluations 5000)
 
 (ns maxOnes)
@@ -34,12 +35,12 @@
   (clojure.string/join "" (for [_ (range n)] (rand-int 2)))
   )
 
-(defn function [L]
-  (count (for [l L :when (= l \1)] l))
+(defn function [ind]
+  (count (for [l ind :when (= l \1)] l))
   )
 
-(defn changeGen [b]
-  (if (= b \1) \0 \1)
+(defn changeGen [g]
+  (if (= g \1) \0 \1)
   )
 
 (def genMerger str/join)
@@ -84,7 +85,7 @@
                ]
           (if (and
                 l
-                (not= l "%")
+                (not (.contains l "%"))
                 )
             (let [
                    values (str/split (str/trim l) spaceRE)
@@ -116,30 +117,31 @@
          res (> fit 395)
          ]
 
-;    (when res
-;      (println "Encontre:" fit)
-;      )
-
     res
     )
 
   )
 
-(defn MaxSAT-evaluate [self solution]
+(defn MaxSAT-evaluate [solution ind]
   (count (filter
            (fn [clause]
+             "Al menos un componente de la cláusula coincide con el valor del gen."
              (not-every? (fn [[sg val]]
-                           (not= (nth solution val) sg)
-                           ) clause)
+                           (not= (nth ind val) sg)
+                           )
+               clause
+               )
              )
-           (.clauses self)
+           (.clauses solution)
            )
     )
   )
 
-
-(defn function [L]
-  (MaxSAT-evaluate instance L)
+(def i (atom 0))
+(defn function [ind]
+  (swap! i inc)
+;  (println @i)
+  (MaxSAT-evaluate instance ind)
   )
 
 (defn genInd [n]
@@ -155,8 +157,8 @@
 (def problemName :maxSAT )
 ;(def problemName :maxOne )
 
-(def terminationCondition :cantEvalsTerminationCondition )
-;(def terminationCondition :fitnessTerminationCondition )
+;(def terminationCondition :cantEvalsTerminationCondition )
+(def terminationCondition :fitnessTerminationCondition )
 
 (case problemName
 
