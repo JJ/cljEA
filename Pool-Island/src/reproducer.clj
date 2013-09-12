@@ -210,6 +210,7 @@
 
   finalize/Finalize
   (finalize [self]
+    (send (.manager self) poolManager/reproducerFinalized *agent*)
     self
     )
   )

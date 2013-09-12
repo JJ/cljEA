@@ -32,7 +32,9 @@
     (swap! (.pools self) #(identity %2) ppools)
 
     (swap! (.endEvol self) #(identity %2) false)
+    (swap! (.cierre self) #(identity %2) false)
     (swap! (.numberOfEvals self) #(identity %2) 0)
+
     self
     )
 
@@ -44,16 +46,32 @@
     )
 
   (poolManagerEnd [self pid]
-    (send pid finalize/finalize)
     ; Cuando llega el último reporte de finalizacion:
-    (when (empty? (swap! (.pools self) #(disj % pid)))
+    (when
+      (and
+        (empty? (swap! (.pools self) #(disj % pid)))
+        (not @(.cierre self))
+        )
+
+      (swap! (.cierre self) not)
       (finalize/finalize self)
       )
     self
     )
 
+  (deactivate! [self]
+    (doseq [p @(.pools self)]
+      (send p poolManager/deactivate!)
+      )
+    self
+    )
+
   (solutionReached [self _ sol]
+
+    ;    (println 'solutionReachedOut)
+
     (when-not @(.endEvol self)
+
       (send (.profiler self) profiler/endEvol
         {
           :time (.getTime (Date.))
@@ -61,13 +79,12 @@
           :bestSolution (nth sol 1)
           }
         )
+
       (swap! (.endEvol self) #(identity %2) true)
       )
 
-    (doseq [p @(.pools self)]
-      (send p poolManager/deactivate!)
-      (finalize/finalize self)
-      )
+    (islandManager/deactivate! self)
+
     self
     )
 
@@ -76,8 +93,9 @@
     ; Si no he acabado y pid es el ultimo pool:
     (when (and
             (empty? (swap! (.pools self) #(disj %1 %2) pid))
-;            (not @(.endEvol self)) ; OJO!!!
+            ;            (not @(.endEvol self)) ; OJO!!!
             )
+
       (send (.profiler self) profiler/endEvol
         {
           :time (.getTime (Date.))
@@ -86,6 +104,9 @@
           }
         )
       (swap! (.endEvol self) #(identity %2) true)
+
+      (send pid poolManager/finalizeAllWorkers)
+
       )
 
     self
@@ -97,6 +118,7 @@
 
   finalize/Finalize
   (finalize [self]
+    (profiler/experimentEnd @(.profiler self))
     self
     )
 

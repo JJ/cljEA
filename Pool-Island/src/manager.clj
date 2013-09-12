@@ -46,38 +46,38 @@
                 )
               )
             )
-          ;        (ShedulingUtility/shutdown)          )
-          )
-        (do
-          (manager/mkExperiment self)
-          )
+          (ShedulingUtility/shutdown)
+        )
+      (do
+        (manager/mkExperiment self)
         )
       )
-    self
     )
-
-  (mkExperiment [self]
-    (let [
-           insts @(.instances self)
-           ]
-      (when-not (empty? insts)
-        (let [
-               [exp name] (peek insts)
-               ]
-          (println (format "Doing experiment: %1s at %2d" name (.getTime (Date.))))
-          (exp)
-          (swap! (.instances self) #(identity %2) (pop insts))
-          )
-
-        )
-      )
-    self
-    )
-
-  (session [self Funs]
-    (swap! (.instances self) #(identity %2) Funs)
-    (manager/mkExperiment self)
-    self
-    )
-
+  self
   )
+
+(mkExperiment [self]
+  (let [
+         insts @(.instances self)
+         ]
+    (when-not (empty? insts)
+      (let [
+             [exp name] (peek insts)
+             ]
+        (println (format "Doing experiment: %1s at %2d" name (.getTime (Date.))))
+        (exp)
+        (swap! (.instances self) #(identity %2) (pop insts))
+        )
+
+      )
+    )
+  self
+  )
+
+(session [self Funs]
+  (swap! (.instances self) #(identity %2) Funs)
+  (manager/mkExperiment self)
+  self
+  )
+
+)

@@ -39,33 +39,41 @@
 
   (iteration [self population]
 
-;    (let [
-;           popEval (map #(problem/function %) population)
-;           ]
-;
-;      (swap! (.iterations self)
-;        #(conj %1 %2)
-;        [(reduce #(if (> %1 %2) %2 %1) popEval)
-;         (reduce #(if (< %1 %2) %2 %1) popEval)
-;         (/ (reduce + popEval) (* 1.0 (count population))) ; promedio
-;         ]
-;        )
-;      )
+    ;    (let [
+    ;           popEval (map #(problem/function %) population)
+    ;           ]
+    ;
+    ;      (swap! (.iterations self)
+    ;        #(conj %1 %2)
+    ;        [(reduce #(if (> %1 %2) %2 %1) popEval)
+    ;         (reduce #(if (< %1 %2) %2 %1) popEval)
+    ;         (/ (reduce + popEval) (* 1.0 (count population))) ; promedio
+    ;         ]
+    ;        )
+    ;      )
 
     self
     )
 
-  (endEvol [self evolData]
-    (let [
-           ;           evolutionDelay (/ (- (:time evolData) @(.initEvol self)) 1000.0)
-           evolutionDelay (- (:time evolData) @(.initEvol self))
-           ]
+  (experimentEnd [self]
+    (let
+      [
+        evolData @(.evolData self)
+        ;           evolutionDelay (/ (- (:time evolData) @(.initEvol self)) 1000.0)
+        evolutionDelay (- (:time evolData) @(.initEvol self))
+        ]
+
       (send @(.manager self) manager/experimentEnd
         [evolutionDelay (count @(.emigrations self))
          @(.conf self) @(.nIslands self) (:numberOfEvals evolData) (:bestSolution evolData)]
         )
-      )
 
+      self
+      )
+    )
+
+  (endEvol [self evolData]
+    (swap! (.evolData self) #(identity %2) evolData)
     self
     )
 

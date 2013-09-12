@@ -21,8 +21,9 @@
   )
 
 (def evaluatorsCount 25)
-(def evaluatorsCapacity 50) ; 20
 (def reproducersCount 10) ;10
+
+(def evaluatorsCapacity 50) ; 20
 (def reproducersCapacity 50) ; 20
 
 (def evaluations 5000)
@@ -137,10 +138,7 @@
     )
   )
 
-(def i (atom 0))
 (defn function [ind]
-  (swap! i inc)
-;  (println @i)
   (MaxSAT-evaluate instance ind)
   )
 
@@ -152,13 +150,14 @@
   (not b)
   )
 
+
 (ns problem)
 
 (def problemName :maxSAT )
 ;(def problemName :maxOne )
 
-;(def terminationCondition :cantEvalsTerminationCondition )
-(def terminationCondition :fitnessTerminationCondition )
+(def terminationCondition :cantEvalsTerminationCondition )
+;(def terminationCondition :fitnessTerminationCondition )
 
 (case problemName
 

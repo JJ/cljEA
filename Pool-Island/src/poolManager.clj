@@ -19,6 +19,16 @@
   ;agent que comparte un conjunto de individuos con
   ;agentes evaluadores y reproductores
 
+  (finalizeAllWorkers [self]
+    (doseq [e @(.evals self)]
+      (send e finalize/finalize)
+      )
+    (doseq [e @(.reps self)]
+      (send e finalize/finalize)
+      )
+    self
+    )
+
   (initEvaluations [self cant]
     (swap! (.evaluations self) #(identity %2) cant)
     self
@@ -129,12 +139,12 @@
 
         (let [
                evaluatorsCapacity (case problem/terminationCondition
-                                    :fitnessTerminationCondition (:evaluatorsCapacity @(.pmConf self))
+                                    :fitnessTerminationCondition problem/evaluatorsCapacity
                                     ; else
                                     (do
                                       (min
                                         (swap! (.evaluations self) #(- %1 %2) n)
-                                        (:evaluatorsCapacity @(.pmConf self)))
+                                        problem/evaluatorsCapacity)
                                       )
                                     )
                ]
@@ -169,11 +179,12 @@
 
   (deactivate! [self]
     (swap! (.active self) #(identity %2) false)
+    (poolManager/finalizeAllWorkers self)
     self
     )
 
   (solutionReachedbyEvaluator [self [ind fit] pid]
-    ;    (println "solutionReachedbyEvaluator" fit)
+    ;        (println "solutionReachedbyEvaluator" fit)
     (when @(.active self)
       ;      (send (.manager self) islandManager/endEvol (.getTime (Date.)))
       (send (.manager self) islandManager/solutionReached *agent* [ind fit])
@@ -187,36 +198,39 @@
     (when @(.active self)
       ;      (send (.manager self) islandManager/endEvol (.getTime (Date.)))
       (send (.manager self) islandManager/numberOfEvaluationsReached *agent*)
-      (finalize/finalize self)
+      ;      (finalize/finalize self)
       (swap! (.active self) #(identity %2) false)
       )
     self
     )
 
   (evalEmpthyPool [self pid]
-    ;    (println "esperando 50 msegs en evalEmpthyPool")
-    (let [
-           f (fn []
-               ;               (println "eval")
-               (send pid evaluator/evaluate (:evaluatorsCapacity @(.pmConf self)))
-               )
-           ]
+    (when @(.active self)
+      ;    (println "esperando 50 msegs en evalEmpthyPool")
+      (let [
+             f (fn []
+                 ;               (println "eval")
+                 (send pid evaluator/evaluate (:evaluatorsCapacity @(.pmConf self)))
+                 )
+             ]
 
-      (ShedulingUtility/send_after 100 f)
+        (ShedulingUtility/send_after 100 f)
+        )
       )
     self
     )
 
   (repEmpthyPool [self pid]
+    (when @(.active self)
+      (let [
+             f (fn []
+                 ;               (println "repr")
+                 (send pid reproducer/evolve (:reproducersCapacity @(.pmConf self)))
+                 )
+             ]
 
-    (let [
-           f (fn []
-               ;               (println "repr")
-               (send pid reproducer/evolve (:reproducersCapacity @(.pmConf self)))
-               )
-           ]
-
-      (ShedulingUtility/send_after 50 f)
+        (ShedulingUtility/send_after 50 f)
+        )
       )
     self
     )

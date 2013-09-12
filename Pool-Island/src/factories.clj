@@ -50,10 +50,10 @@
   ;    [pools ; set
   ;     profiler manager
   ;     endEvol numberOfEvals
-  ;     solutions])
+  ;     solutions cierre])
   (pea.TIslandManager.
     (atom #{}) pprofiler pmanager
-    (atom 0) (atom 0) (atom []))
+    (atom 0) (atom 0) (atom []) (atom false))
   )
 
 (ns reproducer)
@@ -68,7 +68,7 @@
 (defn create []
   ;  (defrecord TProfiler
   ;    [conf manager initEvol nIslands iterations emigrations])
-  (pea.TProfiler. (atom 0) (atom 0) (atom 0) (atom 0) (atom 0) (atom 0))
+  (pea.TProfiler. (atom 0) (atom 0) (atom 0) (atom 0) (atom 0) (atom 0) (atom 0))
   )
 
 (ns manager)

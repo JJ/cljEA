@@ -8,7 +8,7 @@
   [pools ; set
    profiler manager
    endEvol numberOfEvals
-   solutions])
+   solutions cierre])
 
 (defrecord TPoolManager
   [table active migrantsDestination
@@ -16,7 +16,7 @@
    evals reps poolSize evaluations])
 
 (defrecord TProfiler
-  [conf manager initEvol nIslands iterations emigrations])
+  [conf manager initEvol nIslands iterations emigrations evolData])
 
 (defrecord TManager
   [results profiler instances])

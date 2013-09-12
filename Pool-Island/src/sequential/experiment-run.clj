@@ -149,7 +149,7 @@
     )
   )
 
-(def nRes (for [_ (range 20)]
+(def nRes (for [_ (range 2)]
             (testsRunSeqEA)
             )
   )

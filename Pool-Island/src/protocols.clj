@@ -13,12 +13,6 @@
 
 (use '[clojure.java.io :only (writer file)])
 
-(ns finalize)
-
-(defprotocol Finalize
-  (finalize [self])
-  )
-
 (ns evaluator)
 
 (defprotocol Evaluator
@@ -33,6 +27,7 @@
   (evalDone [self pid n])
   (poolManagerEnd [self pid])
   ;  (endEvol [self t])
+  (deactivate! [self])
   (solutionReached [self pid sol])
   (numberOfEvaluationsReached [self pid])
   (bestSolution [self])
@@ -60,6 +55,7 @@
   (evalEmpthyPool [self pid])
   (repEmpthyPool [self pid])
   (bestSolution [self])
+  (finalizeAllWorkers [self])
   )
 
 (ns manager)
@@ -86,5 +82,12 @@
   (migration [self [_ _] t])
   (initEvol [self t])
   (iteration [self population])
+  (experimentEnd [self])
   (endEvol [self evolData])
+  )
+
+(ns finalize)
+
+(defprotocol Finalize
+  (finalize [self])
   )
