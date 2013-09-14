@@ -156,8 +156,8 @@
 (def problemName :maxSAT )
 ;(def problemName :maxOne )
 
-(def terminationCondition :cantEvalsTerminationCondition )
-;(def terminationCondition :fitnessTerminationCondition )
+;(def terminationCondition :cantEvalsTerminationCondition )
+(def terminationCondition :fitnessTerminationCondition )
 
 (case problemName
 

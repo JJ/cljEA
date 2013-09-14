@@ -18,7 +18,7 @@
   manager/Manager
 
   (experimentEnd [self reportData]
-    (println (format "Best fitness: %1d at %2d" (nth reportData 5) (.getTime (Date.))))
+    ;    (println (format "Best fitness: %1d (time -> %2d)" (nth reportData 5) (.getTime (Date.))))
 
     (let [
            nRes (swap! (.results self) #(conj %1 %2) reportData)
@@ -47,37 +47,37 @@
               )
             )
           (ShedulingUtility/shutdown)
-        )
-      (do
-        (manager/mkExperiment self)
+          )
+        (do
+          (manager/mkExperiment self)
+          )
         )
       )
+    self
     )
-  self
-  )
 
-(mkExperiment [self]
-  (let [
-         insts @(.instances self)
-         ]
-    (when-not (empty? insts)
-      (let [
-             [exp name] (peek insts)
-             ]
-        (println (format "Doing experiment: %1s at %2d" name (.getTime (Date.))))
-        (exp)
-        (swap! (.instances self) #(identity %2) (pop insts))
+  (mkExperiment [self]
+    (let [
+           insts @(.instances self)
+           ]
+      (when-not (empty? insts)
+        (let [
+               [exp name] (peek insts)
+               ]
+          (println (format "Doing experiment: %1s (time -> %2d)" name (.getTime (Date.))))
+          (exp)
+          (swap! (.instances self) #(identity %2) (pop insts))
+          )
+
         )
-
       )
+    self
     )
-  self
-  )
 
-(session [self Funs]
-  (swap! (.instances self) #(identity %2) Funs)
-  (manager/mkExperiment self)
-  self
-  )
+  (session [self Funs]
+    (swap! (.instances self) #(identity %2) Funs)
+    (manager/mkExperiment self)
+    self
+    )
 
-)
+  )

@@ -35,7 +35,6 @@
     :fitnessTerminationCondition @solutionFound
     ; else
     (do
-      ;      (println @evaluations)
       (= @evaluations 0)
       )
     )
@@ -138,18 +137,18 @@
 ;  )
 
 (defn testsRunSeqEA []
+  (println (format "Doing experiment (time -> %2d)" (.getTime (Date.))))
   (let [
          initEvol (.getTime (Date.))
          res (runSeqEA
                :initPool (into {} (for [ind (problem/genInitPop problem/popSize problem/chromosomeSize)] [ind [-1 1]]))
                )
          ]
-    ;    (println res)
     [(- (.getTime (Date.)) initEvol) res]
     )
   )
 
-(def nRes (for [_ (range 2)]
+(def nRes (for [_ (range 20)]
             (testsRunSeqEA)
             )
   )
