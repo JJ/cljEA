@@ -33,7 +33,7 @@
 (require '[clojure.string :as str])
 
 (defn genInd [n]
-  (clojure.string/join "" (for [_ (range n)] (rand-int 2)))
+  (str/join "" (for [_ (range n)] (rand-int 2)))
   )
 
 (defn function [ind]
