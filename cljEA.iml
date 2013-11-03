@@ -9,7 +9,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="clojure" level="application" />
+    <orderEntry type="library" name="clojure" level="project" />
   </component>
 </module>
 

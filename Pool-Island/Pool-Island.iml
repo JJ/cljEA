@@ -15,7 +15,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="clojure" level="project" />
-    <orderEntry type="module" module-name="sheduling" exported="" />
     <orderEntry type="module-library" exported="">
       <library name="config">
         <ANNOTATIONS>
@@ -26,6 +25,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module" module-name="sheduling" />
   </component>
 </module>
 
