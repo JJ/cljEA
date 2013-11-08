@@ -9,11 +9,12 @@
 ;; AGPL (http://www.gnu.org/licenses/agpl-3.0.txt) for more details.
 ;;
 
-(load-file "./src/loaderFile.clj")
+(load-file "scripts/loaderFile.clj")
 
 (ns sequential.experiment-run)
 
 (use '[clojure.java.io :only (writer file)])
+
 (import 'java.util.Date)
 
 (def evaluations (atom 5000))
@@ -148,7 +149,7 @@
     )
   )
 
-(def nRes (for [_ (range 20)]
+(def nRes (for [_ (range problem/repetitions)]
             (testsRunSeqEA)
             )
   )
@@ -157,7 +158,7 @@
 ;  (println n)
 ;  )
 
-(with-open [w (writer (file "../../results/book2013/cljEA/seqResults.csv"))]
+(with-open [w (writer (file problem/seqOutputFilename))]
   (.write w "EvolutionDelay,BestSol\n")
   (doseq [[evolutionDelay bestSol] nRes]
     (.write w (format "%1d,%1d\n" evolutionDelay bestSol))

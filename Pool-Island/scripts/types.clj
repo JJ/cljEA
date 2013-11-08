@@ -1,4 +1,5 @@
 (ns pea)
+  (use 'clojure.repl)
 
 (defrecord TEvaluator [manager profiler])
 

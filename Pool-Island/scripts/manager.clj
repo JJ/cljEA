@@ -27,7 +27,7 @@
         (do
           (println "All ends!")
 
-          (with-open [w (writer (file "../../results/book2013/cljEA/parResults.csv"))]
+          (with-open [w (writer (file problem/parallelOutputFilename))]
             (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount,BestSol\n")
             (doseq [[evolutionDelay nEmig conf nIslands numberOfEvals bestSol] nRes]
               (let [
@@ -47,6 +47,7 @@
               )
             )
           (ShedulingUtility/shutdown)
+          (System/exit 0)
           )
         (do
           (manager/mkExperiment self)

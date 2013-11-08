@@ -25,7 +25,9 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="sheduling" />
+    <orderEntry type="library" name="gson-2.2.2" level="project" />
+    <orderEntry type="library" name="sheduling" level="project" />
+    <orderEntry type="library" name="GAGeneralUtilitys" level="project" />
   </component>
 </module>
 

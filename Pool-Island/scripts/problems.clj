@@ -12,21 +12,13 @@
 (ns problem)
 
 (declare terminationCondition fitnessTerminationCondition
-  changeGen function genInd popSize chromosomeSize)
+  changeGen function genInd popSize chromosomeSize )
 
 (def genMerger identity)
 
 (defn genInitPop [PopSize ChromosomeSize]
   (for [_ (range PopSize)] (genInd ChromosomeSize))
   )
-
-(def evaluatorsCount 25)
-(def reproducersCount 10) ;10
-
-(def evaluatorsCapacity 50) ; 20
-(def reproducersCapacity 50) ; 20
-
-(def evaluations 5000)
 
 (ns maxOnes)
 
@@ -56,6 +48,25 @@
 
 
 (ns maxSAT)
+
+(import 'config.GAConfig)
+
+(def configData (GAConfig/loadFromJSON "maxSATConfig.json"))
+
+(def evaluatorsCount (.getEvaluatorsCount configData))
+(def reproducersCount (.getReproducersCount configData)) ;10
+
+(def evaluatorsCapacity (.getEvaluatorsCapacity configData))
+(def reproducersCapacity (.getReproducersCapacity configData))
+
+(def evaluations (.getEvaluations configData))
+(def terminationCondition (keyword (.getTerminationCondition configData)))
+
+(def popSize (.getPopSize configData))
+
+(def seqOutputFilename (.getSeqOutputFilename configData))
+(def parallelOutputFilename (.getParallelOutputFilename configData))
+(def repetitions (.getRepetitions configData))
 
 (require '[clojure.string :as str])
 (use '[clojure.java.io :only (reader file)])
@@ -109,8 +120,7 @@
     )
   )
 
-(def instance (MaxSAT-ProblemLoader "../problems/uf100-01.cnf"))
-(def popSize 1024)
+(def instance (MaxSAT-ProblemLoader "problems/uf100-01.cnf"))
 (def chromosomeSize (.varsCount instance))
 
 (defn fitnessTerminationCondition [ind fit]
@@ -120,13 +130,12 @@
 
     res
     )
-
   )
 
 (defn MaxSAT-evaluate [solution ind]
   (count (filter
            (fn [clause]
-             "Al menos un componente de la cláusula coincide con el valor del gen."
+             "Al menos un componente de la cláusula coincide con el valor del gen"
              (not-every? (fn [[sg val]]
                            (not= (nth ind val) sg)
                            )
@@ -153,11 +162,11 @@
 
 (ns problem)
 
-(def problemName :maxSAT )
+(def problemName :maxSAT)
 ;(def problemName :maxOne )
 
 ;(def terminationCondition :cantEvalsTerminationCondition )
-(def terminationCondition :fitnessTerminationCondition )
+;(def terminationCondition :fitnessTerminationCondition)
 
 (case problemName
 
@@ -166,8 +175,24 @@
             (def changeGen maxSAT/changeGen)
             (def function maxSAT/function)
             (def genInd maxSAT/genInd)
+
             (def popSize maxSAT/popSize)
             (def chromosomeSize maxSAT/chromosomeSize)
+
+            (def evaluatorsCount maxSAT/evaluatorsCount)
+            (def reproducersCount maxSAT/reproducersCount)
+
+            (def evaluatorsCapacity maxSAT/evaluatorsCapacity)
+            (def reproducersCapacity maxSAT/reproducersCapacity)
+
+            (def evaluations maxSAT/evaluations)
+            (def terminationCondition maxSAT/terminationCondition)
+
+
+            (def seqOutputFilename maxSAT/seqOutputFilename)
+            (def parallelOutputFilename maxSAT/parallelOutputFilename)
+            (def repetitions maxSAT/repetitions)
+
             )
   ;sino
   (do
@@ -176,7 +201,8 @@
     (def function maxOnes/function)
     (def genInd maxOnes/genInd)
     (def genMerger maxOnes/genMerger)
-    (def popSize maxOnes/popSize)
+
+      (def popSize maxOnes/popSize)
     (def chromosomeSize maxOnes/chromosomeSize)
     )
   )

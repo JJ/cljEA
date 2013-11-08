@@ -9,7 +9,7 @@
 ;; AGPL (http://www.gnu.org/licenses/agpl-3.0.txt) for more details.
 ;;
 
-(load-file "./src/loaderFile.clj")
+(load-file "scripts/loaderFile.clj")
 
 (ns sequential.canonical)
 
