@@ -19,10 +19,18 @@ import java.io.IOException;
 public class Main {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        RT.var("clojure.core", "load-file").invoke("./scripts/experiment-run.clj");
-        Var report = RT.var("experiment", "init");
-        Object result = report.invoke();
-//        System.out.println(result);
+        Object result;
+        if (args.length > 0 && args[0].toLowerCase().equals("seq")) {
+            RT.var("clojure.core", "load-file").invoke("./scripts/sequential/experiment-run.clj");
+            Var report = RT.var("sequential.experiment-run", "run");
+            result = report.invoke();
+        } else {
+            RT.var("clojure.core", "load-file").invoke("./scripts/experiment-run.clj");
+            Var report = RT.var("experiment", "run");
+            result = report.invoke();
+        }
+        System.out.println(result);
+
     }
 
 }

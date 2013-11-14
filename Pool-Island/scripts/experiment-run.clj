@@ -15,7 +15,7 @@
 
 (load-file "scripts/loaderFile.clj")
 
-(defn init []
+(defn run []
   (ShedulingUtility/start)
 
   (let [
@@ -35,4 +35,4 @@
 
   :ok )
 
-;(init)
+;(run)

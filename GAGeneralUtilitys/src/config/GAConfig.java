@@ -54,6 +54,12 @@ public class GAConfig {
         }
     }
 
+    public static void saveToErlangModule(GAConfig obj, String dir) throws IOException {
+        try (FileWriter fr = new FileWriter(new File(dir + "configuration.erl"))) {
+            fr.write(obj.toErlangRecordInMudule_configuration());
+        }
+    }
+
     public int getRepetitions() {
         return repetitions;
     }
@@ -126,24 +132,45 @@ public class GAConfig {
         this.chromosomeSize = chromosomeSize;
     }
 
+    public String getSeqOutputFilename() {
+        return seqOutputFilename;
+    }
+
+    public void setSeqOutputFilename(String seqOutputFilename) {
+        this.seqOutputFilename = seqOutputFilename;
+    }
+
+    public String getParallelOutputFilename() {
+        return parallelOutputFilename;
+    }
+
+    public void setParallelOutputFilename(String parallelOutputFilename) {
+        this.parallelOutputFilename = parallelOutputFilename;
+    }
+
     public String toErlangRecordInMudule_configuration() {
         return "-module(configuration).\n\n" +
+
                 "-include(\"./include/mtypes.hrl\").\n\n" +
                 "-compile(export_all).\n\n" +
 
                 "gaConfig()-> #gAConfig{" + "\n" +
-                "terminationCondition=" + terminationCondition + "\n" +
-                ", seqOutputFilename=\"" + seqOutputFilename + '\"' + "\n" +
-                ", parallelOutputFilename=\"" + parallelOutputFilename + '\"' + "\n" +
-                ", evaluatorsCount=" + evaluatorsCount + "\n" +
-                ", reproducersCount=" + reproducersCount + "\n" +
-                ", evaluatorsCapacity=" + evaluatorsCapacity + "\n" +
-                ", reproducersCapacity=" + reproducersCapacity + "\n" +
-                ", popSize=" + popSize + "\n" +
-                ", evaluations=" + evaluations + "\n" +
-                ", chromosomeSize=" + chromosomeSize + "\n" +
-                ", repetitions=" + repetitions + "\n" +
+                "terminationCondition=" + terminationCondition + ",\n" +
+                "seqOutputFilename=\"" + seqOutputFilename + '\"' + ",\n" +
+                "parallelOutputFilename=\"" + parallelOutputFilename + '\"' + ",\n" +
+                "evaluatorsCount=" + evaluatorsCount + ",\n" +
+                "reproducersCount=" + reproducersCount + ",\n" +
+                "evaluatorsCapacity=" + evaluatorsCapacity + ",\n" +
+                "reproducersCapacity=" + reproducersCapacity + ",\n" +
+                "popSize=" + popSize + ",\n" +
+                "evaluations=" + evaluations + ",\n" +
+                "chromosomeSize=" + chromosomeSize + ",\n" +
+                "repetitions=" + repetitions + "\n" +
                 "}.";
+    }
+
+    public String toSufixName() {
+        return "_" + evaluatorsCount + "_" + evaluatorsCapacity + "_" + reproducersCount + "_" + reproducersCapacity;
     }
 
     @Override
@@ -161,22 +188,6 @@ public class GAConfig {
                 ", chromosomeSize=" + chromosomeSize +
                 ", repetitions=" + repetitions +
                 "}";
-    }
-
-    public String getSeqOutputFilename() {
-        return seqOutputFilename;
-    }
-
-    public void setSeqOutputFilename(String seqOutputFilename) {
-        this.seqOutputFilename = seqOutputFilename;
-    }
-
-    public String getParallelOutputFilename() {
-        return parallelOutputFilename;
-    }
-
-    public void setParallelOutputFilename(String parallelOutputFilename) {
-        this.parallelOutputFilename = parallelOutputFilename;
     }
 
 }

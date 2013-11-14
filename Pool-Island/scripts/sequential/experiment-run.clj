@@ -149,20 +149,26 @@
     )
   )
 
-(def nRes (for [_ (range problem/repetitions)]
-            (testsRunSeqEA)
-            )
-  )
+(defn run []
+  (let [
+         nRes (for [_ (range problem/repetitions)]
+                (testsRunSeqEA)
+                )
+         ]
 
-;(doseq [n nRes]
-;  (println n)
-;  )
+    ;(doseq [n nRes]
+    ;  (println n)
+    ;  )
 
-(with-open [w (writer (file problem/seqOutputFilename))]
-  (.write w "EvolutionDelay,BestSol\n")
-  (doseq [[evolutionDelay bestSol] nRes]
-    (.write w (format "%1d,%1d\n" evolutionDelay bestSol))
+    (with-open [w (writer (file problem/seqOutputFilename))]
+      (.write w "EvolutionDelay,BestSol\n")
+      (doseq [[evolutionDelay bestSol] nRes]
+        (.write w (format "%1d,%1d\n" evolutionDelay bestSol))
+        )
+      )
+
+    (println "Ends!")
     )
   )
 
-(println "Ends!")
+;(run)
