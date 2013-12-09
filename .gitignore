@@ -13,8 +13,8 @@ libs/
 .settings/
 *.log
 *.xml
+*.cnf
 java4Tests/
 tests/
-problems/
 EAArchitectualGraph/
 clj Snipets.txt
