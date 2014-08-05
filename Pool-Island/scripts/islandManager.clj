@@ -67,11 +67,7 @@
     )
 
   (solutionReached [self _ sol]
-
-    ;    (println 'solutionReachedOut)
-
     (when-not @(.endEvol self)
-
       (send (.profiler self) profiler/endEvol
         {
           :time (.getTime (Date.))
@@ -79,12 +75,9 @@
           :bestSolution (nth sol 1)
           }
         )
-
       (swap! (.endEvol self) #(identity %2) true)
       )
-
     (islandManager/deactivate! self)
-
     self
     )
 
@@ -104,11 +97,8 @@
           }
         )
       (swap! (.endEvol self) #(identity %2) true)
-
       (send pid poolManager/finalizeAllWorkers)
-
       )
-
     self
     )
 

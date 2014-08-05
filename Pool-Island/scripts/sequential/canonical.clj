@@ -36,10 +36,11 @@
     ;    (println "The value of the best solution is:" result)
     (loop [population initPop]
       (let [
-             ;                         _ (println "PopSize:" (+ (count (nth population 0)) (count (nth population 1))))
+             ; _ (println "PopSize:" (+ (count (nth population 0)) (count (nth population 1))))
              iPopEvaluated (evaluatePopulation population)
              bestSol (findBestSolution iPopEvaluated)
              ]
+
         (if (terminationCondition)
           bestSol
           (let [
@@ -91,7 +92,7 @@
                                                             fit (problem/function i)
                                                             ]
 
-                                                       (when (= problem/terminationCondition :fitnessTerminationCondition )
+                                                       (when (= problem/terminationCondition :fitnessTerminationCondition)
                                                          (when (problem/fitnessTerminationCondition i fit)
                                                            (swap! bestSolution #(identity %2) fit)
                                                            )
