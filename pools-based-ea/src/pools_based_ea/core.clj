@@ -11,6 +11,7 @@
               )
          )
 
+
 (defn max-ones [lista]
   (count (filter #(= % 1) lista))
   )
@@ -77,7 +78,7 @@
   )
 
 
-(defn t []
+(defn t- []
   (let [
         conf (with-open [r (reader (file "configMaxOnes.json"))]
                (json/read r :key-fn keyword)
@@ -111,6 +112,7 @@
 
     )
   )
+
 
 (defn t6[]
   (let [
@@ -159,4 +161,18 @@
 
 (defn -main
   [& args]
+  )
+
+
+(defn t []
+  (let [
+        conf (with-open [r (reader (file "configMaxOnes.json"))]
+               (json/read r :key-fn keyword)
+               )
+        obj (problem/create-maxOneProblem conf)
+        ]
+
+    (problem/runParCEvals obj)
+    )
+
   )

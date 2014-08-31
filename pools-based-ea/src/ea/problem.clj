@@ -7,6 +7,10 @@
               )
          )
 
+(require '(pea [pool-manager :as pool-manager]
+               )
+         )
+
 (defprotocol Problem
 
   (fitnessFunction [self])
@@ -16,6 +20,7 @@
   (getPop [self])
 
   (runSeqCEvals [self])
+  (runParCEvals [self])
 
   )
 
@@ -29,7 +34,7 @@
               )
 
     :runSeqCEvals (fn [self]
-                    (let [config (merge (.config self) {:ff (fitnessFunction self) :qf (fn [_] false) :df (fn [_])})]
+                    (let [config (assoc (.config self) :ff (fitnessFunction self) :qf (fn [_] false) :df (fn [_]))]
                       (loop [p2Eval (getPop self)]
                         (let [indEvals (evaluator/evaluate :config config :p2Eval p2Eval)
                               ordIndEvals (sort-by #(nth % 1) > indEvals)]
@@ -39,6 +44,20 @@
                             )
                           )
                         )
+                      )
+                    )
+
+    :runParCEvals (fn [self]
+                    (let [
+                          p-manager (pool-manager/create-PoolManagerCEvals (assoc (.config self)
+                                                                             :getPop #(getPop self)
+                                                                             :ff (fitnessFunction self)
+                                                                             :qf (fn [_] false) :df (fn [_])) 5000)
+                          n-result (fn[sol evals emigrs]
+                                     (println (nth sol 1))
+                                     )
+                          ]
+                      (pool-manager/start p-manager n-result)
                       )
                     )
 
@@ -54,7 +73,16 @@
 (extend MaxOne
   Problem  (assoc any-problem
              :fitnessFunction (fn[self]
-                                #(count (for [a % :when (= a 1)] a))
+                                (let [fit (fn [ind]
+                                            ;(println "Calculando")
+                                            (let [res (count (for [a ind :when (= a 1)] a))]
+                                             ; (println "El resultado fue: " res)
+                                              res
+                                              )
+                                            )]
+                                  fit
+                                  )
+                                ;#(count (for [a % :when (= a 1)] a))
                                 )
 
              :qualityFitnessFunction (fn[self]

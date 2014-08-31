@@ -9,4 +9,5 @@
                   ]
   :main ^:skip-aot pools-based-ea.core
   :target-path "target/%s"
+  :resource-paths ["resources/EACommonLib.jar"]
   :profiles {:uberjar {:aot :all}})
