@@ -73,16 +73,7 @@
 (extend MaxOne
   Problem  (assoc any-problem
              :fitnessFunction (fn[self]
-                                (let [fit (fn [ind]
-                                            ;(println "Calculando")
-                                            (let [res (count (for [a ind :when (= a 1)] a))]
-                                             ; (println "El resultado fue: " res)
-                                              res
-                                              )
-                                            )]
-                                  fit
-                                  )
-                                ;#(count (for [a % :when (= a 1)] a))
+                                #(count (for [a % :when (= a 1)] a))
                                 )
 
              :qualityFitnessFunction (fn[self]
