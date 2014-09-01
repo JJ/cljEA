@@ -4,6 +4,7 @@
 *.class
 *.jar
 *.7z
+*.csv
 bin/
 out/
 libs/

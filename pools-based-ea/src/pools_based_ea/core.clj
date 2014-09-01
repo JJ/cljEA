@@ -21,25 +21,33 @@
         ]
 
     (case (nth args 0)
-      "seq" (println (nth (problem/runSeqCEvals obj) 1))
-      "par" (do
-              (let [
-                    init-time (* 1000 (.getTime (Date.)))
-                    ]
-                (problem/runParCEvals obj (fn[sol evals]
-                                            (let [
-                                                  end-time (* 1000 (.getTime (Date.)))
-                                                  res {:BestSol (nth sol 1) :NumberOfEvals evals :EvaluatorsCapacity (:EvaluatorsCapacity conf)
-                                                       :ReproducersCapacity (:ReproducersCapacity conf)
-                                                       :EvaluatorsCount (:EvaluatorsCount conf) :ReproducersCount (:ReproducersCount conf)
-                                                       :EvolutionDelay  (- end-time init-time)}
-                                                  ]
-                                              (println (json/write-str res))
-                                              (System/exit 1)
-                                              )
-                                            ))
-                )
-              )
+      "seq"  (let [
+                   init-time (* 1000 (.getTime (Date.)))
+                   sol (problem/runSeqCEvals obj)
+                   end-time (* 1000 (.getTime (Date.)))
+                   res {:BestSol (nth (nth sol 0) 1) :EvolutionDelay  (- end-time init-time) :NumberOfEvals (nth sol 1)}
+                   ]
+               (println (json/write-str res))
+               )
+
+      "par"  (let [
+                   init-time (* 1000 (.getTime (Date.)))
+                   ]
+               (problem/runParCEvals obj (fn[sol evals]
+                                           (let [
+                                                 end-time (* 1000 (.getTime (Date.)))
+                                                 ;;                                                   res {:BestSol (nth sol 1) :NumberOfEvals evals}
+                                                 res {:BestSol (nth sol 1) :NumberOfEvals evals :EvaluatorsCapacity (:EvaluatorsCapacity conf)
+                                                      :ReproducersCapacity (:ReproducersCapacity conf)
+                                                      :EvaluatorsCount (:EvaluatorsCount conf) :ReproducersCount (:ReproducersCount conf)
+                                                      :EvolutionDelay  (- end-time init-time)}
+                                                 ]
+                                             (println (json/write-str res))
+                                             (System/exit 1)
+                                             )
+                                           ))
+               )
+
       )
     )
   )

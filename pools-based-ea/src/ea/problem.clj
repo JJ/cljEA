@@ -45,15 +45,16 @@
   )
 
 (extend MaxOne
-  Problem  (merge any-problem seq-ea/seq-problem par-ea/par-problem {
-                                                                     :fitnessFunction (fn[self]
-                                                                                        #(count (for [a % :when (= a 1)] a))
-                                                                                        )
+  Problem  (merge any-problem seq-ea/seq-problem par-ea/par-problem
+                  {
+                   :fitnessFunction (fn[self]
+                                      #(count (for [a % :when (= a 1)] a))
+                                      )
 
-                                                                     :qualityFitnessFunction (fn[self]
-                                                                                               #(> % (- (:ChromosomeSize (.config self)) 2))
-                                                                                               )
-                                                                     }
+                   :qualityFitnessFunction (fn[self]
+                                             #(> % (- (:ChromosomeSize (.config self)) 2))
+                                             )
+                   }
 
                   )
   )

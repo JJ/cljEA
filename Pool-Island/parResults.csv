@@ -1,0 +1,4 @@
+EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount,BestSol
+2544,5000,  2,  25,   10,     2,    394 
+2050,5000, 14,  25,   10,     2,    399 
+1974,5000, 12,  25,   10,     2,    392 
