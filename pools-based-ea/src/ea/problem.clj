@@ -2,14 +2,6 @@
   ea.problem
   (:gen-class))
 
-(require '(ea [evaluator :as evaluator]
-              [reproducer :as reproducer]
-              )
-         )
-
-(require '(pea [pool-manager :as pool-manager]
-               )
-         )
 
 (defprotocol Problem
 
@@ -20,9 +12,19 @@
   (getPop [self])
 
   (runSeqCEvals [self])
-  (runParCEvals [self])
+  (runParCEvals [self r-obtained-notification])
 
   )
+
+(require '(ea [evaluator :as evaluator]
+              [reproducer :as reproducer]
+              [seq-ea :as seq-ea]
+              )
+         )
+
+(require '(pea [par-ea :as par-ea]
+               )
+         )
 
 (def any-problem
   { :genIndividual (fn [self]
@@ -32,34 +34,6 @@
     :getPop (fn [self]
               (for [_ (range (:PopSize (.config self)))] (genIndividual self))
               )
-
-    :runSeqCEvals (fn [self]
-                    (let [config (assoc (.config self) :ff (fitnessFunction self) :qf (fn [_] false) :df (fn [_]))]
-                      (loop [p2Eval (getPop self)]
-                        (let [indEvals (evaluator/evaluate :config config :p2Eval p2Eval)
-                              ordIndEvals (sort-by #(nth % 1) > indEvals)]
-                          (if (< (swap! (.Evaluations self) #(+ % (count indEvals))) (:Evaluations (.config self)))
-                            (recur (reproducer/reproduce :config config :iEvals ordIndEvals))
-                            (first ordIndEvals)
-                            )
-                          )
-                        )
-                      )
-                    )
-
-    :runParCEvals (fn [self]
-                    (let [
-                          p-manager (pool-manager/create-PoolManagerCEvals (assoc (.config self)
-                                                                             :getPop #(getPop self)
-                                                                             :ff (fitnessFunction self)
-                                                                             :qf (fn [_] false) :df (fn [_])) 5000)
-                          n-result (fn[sol evals emigrs]
-                                     (println (nth sol 1))
-                                     )
-                          ]
-                      (pool-manager/start p-manager n-result)
-                      )
-                    )
 
     })
 
@@ -71,14 +45,15 @@
   )
 
 (extend MaxOne
-  Problem  (assoc any-problem
-             :fitnessFunction (fn[self]
-                                #(count (for [a % :when (= a 1)] a))
-                                )
+  Problem  (merge any-problem seq-ea/seq-problem par-ea/par-problem {
+                                                                     :fitnessFunction (fn[self]
+                                                                                        #(count (for [a % :when (= a 1)] a))
+                                                                                        )
 
-             :qualityFitnessFunction (fn[self]
-                                       #(> % (- (:ChromosomeSize (.config self)) 2))
-                                       )
+                                                                     :qualityFitnessFunction (fn[self]
+                                                                                               #(> % (- (:ChromosomeSize (.config self)) 2))
+                                                                                               )
+                                                                     }
 
-             )
+                  )
   )
