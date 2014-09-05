@@ -92,9 +92,7 @@
            ]
 
       (loop [v []]
-        (let [
-               l (.readLine r)
-               ]
+        (let [l (.readLine r)]
           (if (and
                 l
                 (not (.contains l "%"))

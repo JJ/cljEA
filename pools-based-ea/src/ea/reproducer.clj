@@ -2,8 +2,7 @@
   ea.reproducer
   (:gen-class))
 
-
-(defn enhanceParents [pop]
+(defn enhance-parents [pop]
   (loop [p2d pop  result '()]
     (let [current (first p2d) remain (rest p2d)]
       (if (empty? remain)
@@ -14,8 +13,7 @@
     )
   )
 
-
-(defn parentsSelector [pop n]
+(defn parents-selector [pop n]
   (let [nPar (count pop)
         f (fn []
             (let [
@@ -30,7 +28,6 @@
     )
   )
 
-
 (defn crossover [p]
   (let [
         [a b] p
@@ -42,9 +39,7 @@
     )
   )
 
-
-(defn changeGen [g] (if (= g 0) 1 0))
-
+(defn change-gen [g] (if (= g 0) 1 0))
 
 (defn mutate [ind]
   (let [
@@ -53,17 +48,16 @@
         b1 (first b)
         b2 (rest b)
         ]
-    (vec (concat a (conj b2 (changeGen b1))))
+    (vec (concat a (conj b2 (change-gen b1))))
     )
   )
-
 
 (defn reproduce [& {:keys [config iEvals]}]
   (if (> (count iEvals) 0)
     (let [
           lenSubPop (count iEvals)
-          p2Rep (enhanceParents (for [[a b] iEvals] a))
-          parents (parentsSelector p2Rep (quot lenSubPop 2))
+          p2Rep (enhance-parents (for [[a b] iEvals] a))
+          parents (parents-selector p2Rep (quot lenSubPop 2))
           npInds (map crossover parents)
           l1 (for [[a _] npInds] a)
           l2 (for [[_ a] npInds] a)
@@ -75,5 +69,4 @@
       )
     '()
     )
-
   )

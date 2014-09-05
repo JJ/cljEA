@@ -14,10 +14,14 @@
 (defn -main
   [& args]
   (let [
-        conf (with-open [r (reader (file "configMaxOnes.json"))]
+        ;        conf (with-open [r (reader (file "configMaxOnes.json"))]
+        ;               (json/read r :key-fn keyword)
+        ;               )
+        ;        obj (problem/create-maxOneProblem conf)
+        conf (with-open [r (reader (file "configMaxSAT.json"))]
                (json/read r :key-fn keyword)
                )
-        obj (problem/create-maxOneProblem conf)
+        obj (problem/create-maxSATProblem conf)
         ]
 
     (case (nth args 0)
