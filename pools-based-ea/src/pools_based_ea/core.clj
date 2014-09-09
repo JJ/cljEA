@@ -26,20 +26,20 @@
 
     (case (nth args 0)
       "seq"  (let [
-                   init-time (* 1000 (.getTime (Date.)))
+                   init-time (System/nanoTime)
                    sol (problem/runSeqCEvals obj)
-                   end-time (* 1000 (.getTime (Date.)))
+                   end-time (System/nanoTime)
                    res {:BestSol (nth (nth sol 0) 1) :EvolutionDelay  (- end-time init-time) :NumberOfEvals (nth sol 1)}
                    ]
                (println (json/write-str res))
                )
 
       "par"  (let [
-                   init-time (* 1000 (.getTime (Date.)))
+                   init-time (System/nanoTime)
                    ]
                (problem/runParCEvals obj (fn[sol evals]
                                            (let [
-                                                 end-time (* 1000 (.getTime (Date.)))
+                                                 end-time (System/nanoTime)
                                                  ;;                                                   res {:BestSol (nth sol 1) :NumberOfEvals evals}
                                                  res {:BestSol (nth sol 1) :NumberOfEvals evals :EvaluatorsCapacity (:EvaluatorsCapacity conf)
                                                       :ReproducersCapacity (:ReproducersCapacity conf)
