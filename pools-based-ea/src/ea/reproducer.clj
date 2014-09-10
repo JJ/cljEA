@@ -2,31 +2,42 @@
   ea.reproducer
   (:gen-class))
 
-(defn enhance-parents [pop]
-  (loop [p2d pop  result '()]
-    (let [current (first p2d) remain (rest p2d)]
-      (if (empty? remain)
-        (conj result current)
-        (recur remain (concat result (repeat (inc (count remain)) current)))
-        )
-      )
-    )
-  )
-
 (defn parents-selector [pop n]
-  (let [nPar (count pop)
+  (let [
+        nPar (count pop)
         f (fn []
             (let [
-                  e (nth pop (rand-int nPar))
-                  o (some #(when-not (= e %) %) (repeatedly #(nth pop (rand-int nPar)))) ; The first individual diferent to e
+                  n1 (rand-int nPar)
+                  n2 (rand-int nPar)
+                  n3 (rand-int nPar)
+
+                  i1 (nth pop n1)
+                  i2 (nth pop n2)
+                  i3 (nth pop n3)
+
+                  ;n1 (rand-int nPar)
+                  ;o (some #(when-not (= e %) %) (repeatedly #(nth pop (rand-int nPar)))) ; The first individual diferent to e
                   ]
-              [e o]
+
+              (if (< (nth i1 1) (nth i2 1))
+                (if (< (nth i1 1) (nth i3 1))
+                  [(nth i2 0) (nth i3 0)]
+                  [(nth i2 0) (nth i1 0)]
+                  )
+                (if (< (nth i2 1) (nth i3 1))
+                  [(nth i1 0) (nth i3 0)]
+                  [(nth i2 0) (nth i1 0)]
+                  )
+                )
+
+              ;[e o]
               )
             )
         ]
     (repeatedly n f)
     )
   )
+
 
 (defn crossover [p]
   (let [
@@ -52,12 +63,12 @@
     )
   )
 
+
 (defn reproduce [& {:keys [config iEvals]}]
   (if (> (count iEvals) 0)
     (let [
           lenSubPop (count iEvals)
-          p2Rep (enhance-parents (for [[a b] iEvals] a))
-          parents (parents-selector p2Rep (quot lenSubPop 2))
+          parents (parents-selector iEvals (quot lenSubPop 2))
           npInds (map crossover parents)
           l1 (for [[a _] npInds] a)
           l2 (for [[_ a] npInds] a)

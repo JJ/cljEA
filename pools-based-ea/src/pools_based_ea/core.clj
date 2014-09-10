@@ -1,6 +1,6 @@
 (ns pools-based-ea.core
-  (:gen-class)
   (:require [clojure.data.json :as json])
+  (:gen-class)
   )
 
 (use '[clojure.java.io :only (reader file)])
@@ -47,7 +47,7 @@
                                                       :EvolutionDelay  (- end-time init-time)}
                                                  ]
                                              (println (json/write-str res))
-                                             (System/exit 1)
+                                             (System/exit 0)
                                              )
                                            ))
                )
