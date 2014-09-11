@@ -25,7 +25,8 @@
         ]
 
     (case (nth args 0)
-      "seq"  (let [
+
+      "sce"  (let [
                    init-time (System/nanoTime)
                    sol (problem/runSeqCEvals obj)
                    end-time (System/nanoTime)
@@ -34,7 +35,16 @@
                (println (json/write-str res))
                )
 
-      "par"  (let [
+      "sfq"  (let [
+                   init-time (System/nanoTime)
+                   sol (problem/runSeqFitnessQuality obj)
+                   end-time (System/nanoTime)
+                   res {:BestSol (nth (nth sol 0) 1) :EvolutionDelay  (- end-time init-time) :NumberOfEvals (nth sol 1)}
+                   ]
+               (println (json/write-str res))
+               )
+
+      "pce"  (let [
                    init-time (System/nanoTime)
                    ]
                (problem/runParCEvals obj (fn[sol evals]
@@ -51,6 +61,24 @@
                                              )
                                            ))
                )
+
+      "pfq" (let [
+                  init-time (System/nanoTime)
+                  ]
+              (problem/runParFitnessQuality obj (fn[sol evals]
+                                                  (let [
+                                                        end-time (System/nanoTime)
+                                                        ;;                                                   res {:BestSol (nth sol 1) :NumberOfEvals evals}
+                                                        res {:BestSol (nth sol 1) :NumberOfEvals evals :EvaluatorsCapacity (:EvaluatorsCapacity conf)
+                                                             :ReproducersCapacity (:ReproducersCapacity conf)
+                                                             :EvaluatorsCount (:EvaluatorsCount conf) :ReproducersCount (:ReproducersCount conf)
+                                                             :EvolutionDelay  (- end-time init-time)}
+                                                        ]
+                                                    (println (json/write-str res))
+                                                    (System/exit 0)
+                                                    )
+                                                  ))
+              )
 
       )
     )

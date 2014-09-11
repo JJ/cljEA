@@ -6,13 +6,19 @@
 (defprotocol Problem
 
   (fitnessFunction [self])
-  (qualityFitnessFunction [self v])
+  (qualityFitnessFunction [self])
 
   (genIndividual [self])
   (getPop [self])
 
   (runSeqCEvals [self])
+
   (runParCEvals [self r-obtained-notification])
+
+
+  (runSeqFitnessQuality [self])
+
+  (runParFitnessQuality [self r-obtained-notification])
 
   )
 
@@ -142,7 +148,7 @@
                                       )
 
                    :qualityFitnessFunction (fn[self]
-                                             #(> % 395)
+                                             #(> % 405)
                                              )
                    }
 
