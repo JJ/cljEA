@@ -36,7 +36,7 @@
 
   (init [self conf]
     (swap! (.pmConf self) #(identity %2)
-      (dissoc conf :population )
+      (dissoc conf :population)
       )
     (swap! (.evals self) #(identity %2)
       (set (for [_ (range (:evaluatorsCount conf))]
@@ -132,31 +132,26 @@
     self
     )
 
-  (evalDone [self pid n]
+  (evalDone [self pid n bs]
     (if @(.active self)
       (do
-        (send (.manager self) islandManager/evalDone *agent* n)
-
+        (send (.manager self) islandManager/evalDone *agent* n bs)
         (let [
-               evaluatorsCapacity (case problem/terminationCondition
-                                    :fitnessTerminationCondition problem/evaluatorsCapacity
-                                    ; else
-                                    (do
-                                      (min
-                                        (swap! (.evaluations self) #(- %1 %2) n)
-                                        problem/evaluatorsCapacity)
-                                      )
+               evaluatorsCapacity (min (swap! (.evaluations self) #(- %1 %2) n)
+                                    problem/evaluatorsCapacity
                                     )
                ]
           (if (> evaluatorsCapacity 0)
             (send pid evaluator/evaluate evaluatorsCapacity)
-            (do ; acabamos pues se hicieron todas las evaluaciones (o más)
-              (poolManager/evaluationsDone self)
+            ;            (poolManager/evaluationsDone self) ; acabamos pues se hicieron todas las evaluaciones (o más)
+            (when @(.active self)
+              ;      (send (.manager self) islandManager/endEvol (.getTime (Date.)))
+              (send (.manager self) islandManager/numberOfEvaluationsReached *agent* bs)
+              ;      (finalize/finalize self)
+              (swap! (.active self) #(identity %2) false)
               )
             )
-
           )
-
         )
       (send pid finalize/finalize)
       )
@@ -194,15 +189,15 @@
     self
     )
 
-  (evaluationsDone [self]
-    (when @(.active self)
-      ;      (send (.manager self) islandManager/endEvol (.getTime (Date.)))
-      (send (.manager self) islandManager/numberOfEvaluationsReached *agent*)
-      ;      (finalize/finalize self)
-      (swap! (.active self) #(identity %2) false)
-      )
-    self
-    )
+  ;  (evaluationsDone [self]
+  ;    (when @(.active self)
+  ;      ;      (send (.manager self) islandManager/endEvol (.getTime (Date.)))
+  ;      (send (.manager self) islandManager/numberOfEvaluationsReached *agent*)
+  ;      ;      (finalize/finalize self)
+  ;      (swap! (.active self) #(identity %2) false)
+  ;      )
+  ;    self
+  ;    )
 
   (evalEmpthyPool [self pid]
     (when @(.active self)
@@ -235,20 +230,20 @@
     self
     )
 
-  (bestSolution [self]
-    (let [
-           evals (for [[ind [fit state]] @(.table self)
-                       :when (= state 2)]
-                   [ind fit]
-                   )
-           ]
-      (if (empty? evals)
-        [nil -1]
-        (reduce #(if (< (%1 1) (%2 1)) %2 %1) evals)
-        )
-
-      )
-    )
+  ;  (bestSolution [self]
+  ;    (let [
+  ;           evals (for [[ind [fit state]] @(.table self)
+  ;                       :when (= state 2)]
+  ;                   [ind fit]
+  ;                   )
+  ;           ]
+  ;      (if (empty? evals)
+  ;        [nil -1]
+  ;        (reduce #(if (< (%1 1) (%2 1)) %2 %1) evals)
+  ;        )
+  ;
+  ;      )
+  ;    )
 
   finalize/Finalize
   (finalize [self]

@@ -58,7 +58,7 @@
     (send mIslandManager islandManager/start)
     )
 
-  :ok )
+  :ok)
 
 (defn r2 [pprofiler pmanager]
   (let [
@@ -118,4 +118,5 @@
     (send mIslandManager islandManager/start)
     )
 
-  :ok )
+  :ok
+  )

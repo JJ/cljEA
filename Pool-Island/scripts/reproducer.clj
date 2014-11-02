@@ -14,12 +14,12 @@
 (import 'java.util.Date)
 (require '[clojure.set])
 
+(use 'clojure.repl)
+
 (defn extractSubpopulation
   "returns: (seq [ind fitness])"
   [sels n]
-  (let [
-         res (sort pea/cmp2 sels)
-         ]
+  (let [res (sort pea/cmp2 sels)]
     (take n res)
     )
   )

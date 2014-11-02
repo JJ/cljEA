@@ -17,7 +17,7 @@
 
 (import 'java.util.Date)
 
-(def evaluations (atom 5000))
+(def evaluations (atom 0))
 (def solutionFound (atom false))
 
 (defn bestSolution [pool]
@@ -31,66 +31,51 @@
     )
   )
 
-(defn terminationCondition []
-  (case problem/terminationCondition
-    :fitnessTerminationCondition @solutionFound
-    ; else
-    (do
-      (= @evaluations 0)
-      )
-    )
-  )
-
 (defn runSeqEA [& {:keys [
                            initPool
                            ]}
                 ]
-
-  (swap! evaluations #(identity %2) problem/evaluations)
   (swap! solutionFound #(identity %2) false)
-
   (loop [
-          pool (ref initPool)
+          pool (atom initPool)
           evalDone 0
+          bSolution [nil -1]
           ]
-
     (let [
-           evaluatorsCapacity (case problem/terminationCondition
-                                :fitnessTerminationCondition problem/evaluatorsCapacity
-                                ; else
-                                (do
-                                  (swap! evaluations #(- %1 %2) evalDone)
-                                  (min @evaluations problem/evaluatorsCapacity)
+           newEvalDone (atom 0)
+           terminationCondition (fn []
+                                  (or
+                                    (>= (+ evalDone @newEvalDone) problem/evaluations)
+                                    @solutionFound
+                                    )
+                                  )
+           ;           evaluatorsCapacity (min (swap! evaluations #(- %1 %2) evalDone) problem/evaluatorsCapacity)
+           evaluatorsCapacity (min (- problem/evaluations evalDone) problem/evaluatorsCapacity)
+           current-best-sol (if (> evaluatorsCapacity 0)
+                              (let [
+                                     [resEval solFound nSels bs] (pea/evaluate
+                                                                   :sels (take evaluatorsCapacity
+                                                                           (for [[ind [_ state]] @pool
+                                                                                 :when (= state 1)]
+                                                                             ind
+                                                                             )
+                                                                           )
+                                                                   )
+                                     ]
+                                (when resEval
+                                  (let [pnSels (for [[i f] nSels] [i [f 2]])]
+                                    (swap! pool #(into %1 %2) pnSels)
+                                    (swap! newEvalDone #(identity %2) (count pnSels))
+                                    (swap! solutionFound #(identity %2) solFound)
+                                    )
+                                  )
+                                (if-not @solutionFound
+                                  (if (> (bs 1) (bSolution 1)) bs bSolution)
+                                  bs
                                   )
                                 )
-           newEvalDone (atom 0)
-           _ (when (> evaluatorsCapacity 0)
-               (let [
-                      [resEval nSels] (pea/evaluate
-                                        :sels (take evaluatorsCapacity
-                                                (for [[ind [_ state]] @pool
-                                                      :when (= state 1)]
-                                                  ind
-                                                  )
-                                                )
-                                        :doIfFitnessTerminationCondition (fn [ind fit]
-                                                                           (swap! solutionFound #(identity %2) true)
-                                                                           )
-                                        )
-                      ]
-                 (when resEval
-                   (let [
-                          pnSels (for [[i f] nSels] [i [f 2]])
-                          ]
-
-                     (dosync
-                       (alter pool #(into %1 %2) pnSels)
-                       )
-                     (swap! newEvalDone #(identity %2) (count pnSels))
-                     )
-                   )
-                 )
-               )
+                              bSolution
+                              )
 
            subpop (pea/extractSubpopulation
                     (for [[ind [fitness state]] @pool
@@ -108,19 +93,19 @@
            ]
 
       (when res
-        (dosync
-          (alter pool #(identity %2) (pea/mergeFunction
-                                       @pool
-                                       subpop noParents
-                                       nInds bestParents (count @pool)
-                                       ))
+        (swap! pool #(identity %2) (pea/mergeFunction
+                                     @pool
+                                     subpop noParents
+                                     nInds bestParents (count @pool)
+                                     )
           )
-
         )
 
+
+      ;      (println (+ evalDone @newEvalDone))
       (if (terminationCondition)
-        (bestSolution @pool)
-        (recur pool @newEvalDone)
+        [(current-best-sol 1) (+ evalDone @newEvalDone)]
+        (recur pool (+ evalDone @newEvalDone) current-best-sol)
         )
 
       )
@@ -145,25 +130,20 @@
                :initPool (into {} (for [ind (problem/genInitPop problem/popSize problem/chromosomeSize)] [ind [-1 1]]))
                )
          ]
-    [(- (.getTime (Date.)) initEvol) res]
+    (flatten [(- (.getTime (Date.)) initEvol) res])
     )
   )
 
 (defn run []
-  (let [
-         nRes (for [_ (range problem/repetitions)]
-                (testsRunSeqEA)
-                )
-         ]
-
+  (let [nRes (for [_ (range problem/repetitions)] (testsRunSeqEA))]
     ;(doseq [n nRes]
     ;  (println n)
     ;  )
 
     (with-open [w (writer (file problem/seqOutputFilename))]
-      (.write w "EvolutionDelay,BestSol\n")
-      (doseq [[evolutionDelay bestSol] nRes]
-        (.write w (format "%1d,%1d\n" evolutionDelay bestSol))
+      (.write w "EvolutionDelay,Evaluations,BestSol\n")
+      (doseq [[evolutionDelay bestSol evals] nRes]
+        (.write w (format "%1d,%1d,%1d\n" evolutionDelay evals bestSol))
         )
       )
 

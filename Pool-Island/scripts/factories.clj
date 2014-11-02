@@ -35,7 +35,7 @@
                )
          ]
 
-;    (add-watch pp :log log)
+    ;    (add-watch pp :log log)
 
     (pea.TPoolManager. pp
       (atom true) (atom 0) pprofiler
@@ -53,7 +53,7 @@
   ;     solutions cierre])
   (pea.TIslandManager.
     (atom #{}) pprofiler pmanager
-    (atom 0) (atom 0) (atom []) (atom false))
+    (atom 0) (atom 0) (atom false) (atom [nil -1]))
   )
 
 (ns reproducer)

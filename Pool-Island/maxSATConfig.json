@@ -1,5 +1,4 @@
 {
-"terminationCondition":"cantEvalsTerminationCondition",
 "seqOutputFilename": "seqResults.csv",
 "parallelOutputFilename": "parResults.csv",
 "evaluatorsCount":25,
@@ -7,7 +6,6 @@
 "evaluatorsCapacity":50,
 "reproducersCapacity":50,
 "popSize":1024,
-"evaluations":5000,
-"chromosomeSize":0,
-"repetitions":3
+"evaluations":500000,
+"repetitions":10
 }

@@ -148,7 +148,7 @@
                                       )
 
                    :qualityFitnessFunction (fn[self]
-                                             #(> % 405)
+                                             #(> % 420)
                                              )
                    }
 

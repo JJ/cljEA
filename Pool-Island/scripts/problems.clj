@@ -122,12 +122,7 @@
 (def chromosomeSize (.varsCount instance))
 
 (defn fitnessTerminationCondition [ind fit]
-  (let [
-         res (> fit 395)
-         ]
-
-    res
-    )
+  (> fit 423)
   )
 
 (defn MaxSAT-evaluate [solution ind]

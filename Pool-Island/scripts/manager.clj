@@ -28,7 +28,7 @@
           (println "All ends!")
 
           (with-open [w (writer (file problem/parallelOutputFilename))]
-            (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount,BestSol\n")
+            (.write w "EvolutionDelay,Evaluations,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount,BestSol\n")
             (doseq [[evolutionDelay nEmig conf nIslands numberOfEvals bestSol] nRes]
               (let [
                      Ec (:evaluatorsCount conf)

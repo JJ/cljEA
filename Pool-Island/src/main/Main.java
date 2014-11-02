@@ -30,9 +30,5 @@ public class Main {
             result = report.invoke();
         }
         System.out.println(result);
-
     }
-
 }
-
-

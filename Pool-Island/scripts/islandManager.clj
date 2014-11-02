@@ -38,9 +38,14 @@
     self
     )
 
-  (evalDone [self pid n]
+  (evalDone [self pid n bs]
     (when (some #{pid} @(.pools self))
       (swap! (.numberOfEvals self) #(+ %1 %2) n)
+      (if (> (bs 1)
+            (@(.bSolution self) 1)
+            )
+        (swap! (.bSolution self) #(identity %2) bs)
+        )
       )
     self
     )
@@ -81,8 +86,10 @@
     self
     )
 
-  (numberOfEvaluationsReached [self pid]
-    (swap! (.solutions self) #(conj %1 %2) (poolManager/bestSolution @pid))
+  (numberOfEvaluationsReached [self pid bs]
+    (if (> (bs 1) (@(.bSolution self) 1))
+      (reset! (.bSolution self) bs)
+      )
     ; Si no he acabado y pid es el ultimo pool:
     (when (and
             (empty? (swap! (.pools self) #(disj %1 %2) pid))
@@ -93,7 +100,7 @@
         {
           :time (.getTime (Date.))
           :numberOfEvals @(.numberOfEvals self)
-          :bestSolution ((islandManager/bestSolution self) 1)
+          :bestSolution (@(.bSolution self) 1)
           }
         )
       (swap! (.endEvol self) #(identity %2) true)
@@ -102,9 +109,9 @@
     self
     )
 
-  (bestSolution [self]
-    (reduce #(if (< (%1 1) (%2 1)) %2 %1) @(.solutions self))
-    )
+;  (bestSolution [self]
+;    (reduce #(if (< (%1 1) (%2 1)) %2 %1) @(.solutions self))
+;    )
 
   finalize/Finalize
   (finalize [self]

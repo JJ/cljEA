@@ -1,5 +1,6 @@
 (ns pea)
-  (use 'clojure.repl)
+
+(use 'clojure.repl)
 
 (defrecord TEvaluator [manager profiler])
 
@@ -9,7 +10,7 @@
   [pools ; set
    profiler manager
    endEvol numberOfEvals
-   solutions cierre])
+   cierre bSolution])
 
 (defrecord TPoolManager
   [table active migrantsDestination
@@ -48,21 +49,21 @@
 (defn print-error [the-agent exception]
   (when @error
     ;      (println (class @the-agent) "::" @(.hs @the-agent))
-    (.println System/out (.getMessage exception))
+;    (.println System/out (.getMessage exception))
     (swap! error #(identity %2) false)
-    (@jaGlobal)
     (clojure.repl/pst exception)
+    (@jaGlobal)
 
-    (with-open [w (writer (file "log.txt"))]
+;    (with-open [w (writer (file "log.txt"))]
       ;        (.write w "EvolutionDelay,NumberOfEvals,Emigrations,EvaluatorsCount,ReproducersCount,IslandsCount\n")
       ;        (def allH @(.hs @the-agent))
       ;        (doseq [ hEntry (subvec allH (- (count allH) 1))]
       ;          (.write w (str hEntry))
       ;          )
 
-      (.write w (str @(.hs @the-agent)))
-
-      )
+;      (.write w (str @(.hs @the-agent)))
+;
+;      )
 
     )
 
@@ -119,7 +120,7 @@
   )
 
 (defn cmp2 [e1 e2]
-  ;    (swap! pea/jaGlobal #(identity %2) #(println (clojure.string/join ":::" [e1 e2])))
+;  (reset! pea/jaGlobal [e1 e2])
   (> (e1 1) (e2 1))
   )
 

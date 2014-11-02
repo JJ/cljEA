@@ -11,38 +11,55 @@
 
 (ns pea)
 
-(defn evaluate [& {:keys [sels doIfFitnessTerminationCondition]}]
+(defn evaluate [& {:keys [sels]}]
   (if (empty? sels)
-    (do
-      [false nil]
-      )
-    (do
+    [false false nil nil]
+    (loop [nSels sels ; The collection
+           accu [] ; The results
+           b-solution [nil -1] ; The best individual so far
+           ]
       (let [
-             nSels
-             (map
-               (fn [ind]
-                 (let [
-                        fit (problem/function ind)
-                        ]
-
-                   (when (= problem/terminationCondition :fitnessTerminationCondition )
-                     (when (problem/fitnessTerminationCondition ind fit)
-                       (doIfFitnessTerminationCondition ind fit)
-                       )
-                     )
-
-                   [ind fit]
-                   )
-                 )
-               sels
-               )
+             ind (first nSels)
+             fit (problem/function ind)
+             no-follow (problem/fitnessTerminationCondition ind fit)
              ]
 
-        [true nSels]
+        (if no-follow
+          [true true (conj accu [ind fit]) [ind fit]]
+          (if (empty? (rest nSels))
+            [true false (conj accu [ind fit]) b-solution]
+            (recur (rest nSels) (conj accu [ind fit]) (if (> fit (b-solution 1)) [ind fit] b-solution))
+            )
+          )
         )
       )
-    )
+    ;      ;************************************************************
+    ;      (let [
+    ;             nSels
+    ;             (map
+    ;               (fn [ind]
+    ;                 (let [
+    ;                        fit (problem/function ind)
+    ;                        ]
+    ;
+    ;                   (when (= problem/terminationCondition :fitnessTerminationCondition)
+    ;                     (when (problem/fitnessTerminationCondition ind fit)
+    ;                       (doIfFitnessTerminationCondition ind fit)
+    ;                       )
+    ;                     )
+    ;
+    ;                   [ind fit]
+    ;                   )
+    ;                 )
+    ;               sels
+    ;               )
+    ;             ]
+    ;
+    ;        [true nSels]
+    ;        )
+    ;      ;************************************************************
 
+    )
   )
 
 (extend-type TEvaluator
@@ -50,24 +67,25 @@
 
   (evaluate [self n]
     (let [
-           [res nSels] (pea/evaluate
+           [resEval solFound nSels bs] (pea/evaluate
                          :sels (take n
                                  (for [[ind [_ state]] @(.table @(.manager self))
                                        :when (= state 1)]
                                    ind
                                    )
                                  )
-                         :doIfFitnessTerminationCondition #(send (.manager self) poolManager/solutionReachedbyEvaluator [%1 %2] *agent*)
                          )
            ]
 
-      (if res
+      (if resEval
         (let [
                pnSels (for [[i f] nSels] [i [f 2]])
                ]
-
-          (send (.manager self) poolManager/add2Pool pnSels)
-          (send (.manager self) poolManager/evalDone *agent* (count pnSels))
+          (send (.manager self) poolManager/evalDone *agent* (count pnSels) bs)
+          (if solFound
+            (send (.manager self) poolManager/solutionReachedbyEvaluator bs *agent*)
+            (send (.manager self) poolManager/add2Pool pnSels)
+            )
           )
         (send (.manager self) poolManager/evalEmpthyPool *agent*)
         )
