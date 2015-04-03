@@ -17,5 +17,4 @@ libs/
 *.cnf
 java4Tests/
 tests/
-EAArchitectualGraph/
 clj Snipets.txt
